@@ -1,0 +1,77 @@
+{
+  "slug": "rokumon-village",
+  "title": "Rokumon Village",
+  "tagline": "Found a mountain settlement. Keep what the clan remembers.",
+  "description": "A quiet incremental village builder. Gather wood, stone, food, and spirit-ink, raise a handful of buildings, and found a new settlement for a permanent clan seal. Star-iron and moon-lacquer can arrive from other Rokumon games.",
+  "status": "released",
+  "visibility": "unlisted",
+  "featured": false,
+  "version": "1.0.0",
+  "releasedAt": "2026-11-10",
+  "updatedAt": "2026-11-10",
+  "delivery": {
+    "mode": "embedded",
+    "release": "1.0.0",
+    "budget": { "maxBundleBytes": 1048576, "maxFiles": 8 }
+  },
+  "genres": ["Incremental", "Builder"],
+  "tags": ["idle", "village", "builder", "prestige", "offline", "mobile", "single-player"],
+  "controls": ["mouse", "touch"],
+  "players": { "min": 1, "max": 1 },
+  "support": { "desktop": "full", "mobile": "full" },
+  "media": {
+    "cover": null,
+    "hero": null,
+    "logo": null,
+    "screenshots": []
+  },
+  "theme": { "accent": "#E0B15A", "background": "#1A2420" },
+  "credits": {
+    "developer": "Rokumon Games",
+    "art": "Rokumon Games",
+    "audio": "Synthesized Web Audio"
+  },
+  "runtime": {
+    "kind": "iframe",
+    "entry": "/games/rokumon-village/index.html",
+    "trust": "first-party",
+    "orientation": "any",
+    "allowFullscreen": true,
+    "pointerLock": false
+  },
+  "bridge": {
+    "version": 1,
+    "enabled": true,
+    "capabilities": ["score", "event", "gameOver"],
+    "events": [
+      {
+        "name": "tier-reached",
+        "properties": { "tier": "number", "name": "string" }
+      },
+      {
+        "name": "settlement-founded",
+        "properties": {
+          "seals": "number",
+          "runProsperity": "number",
+          "lifetime": "number",
+          "tier": "number"
+        }
+      },
+      {
+        "name": "star-iron-tempered",
+        "properties": { "tempers": "number" }
+      },
+      {
+        "name": "moon-lacquer-offered",
+        "properties": { "offerings": "number" }
+      }
+    ]
+  },
+  "source": {
+    "repo": "https://github.com/SarutobiSasuke8/rokumon-village",
+    "localPath": null,
+    "bundlePath": null,
+    "bundleIncludes": null,
+    "buildCommand": null
+  }
+}

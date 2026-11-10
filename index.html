@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rokumon Village</title>
+<meta name="theme-color" content="#1A2420">
+<meta name="description" content="An atmospheric incremental mountain village. Gather, build, and found the next settlement.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231A2420'/%3E%3Cpath d='M7 12h18M10 12v12M22 12v12M10 9h12' fill='none' stroke='%23F3EAD7' stroke-width='1.6'/%3E%3Ccircle cx='16' cy='18' r='1.6' fill='%23E0B15A'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #1c1915;
+    --ink-soft: #4e463c;
+    --washi: #f4ecdc;
+    --washi-2: #e6d9c2;
+    --cedar: #1a2420;
+    --gold: #e0b15a;
+    --gold-2: #8a5e28;
+    --cinnabar: #b64032;
+    --moss: #2f6a45;
+    --mist: #c9d2cb;
+    --line: rgba(28, 25, 21, 0.14);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; max-width: 100%; overflow-x: hidden; }
+  body {
+    min-height: 100%;
+    font-family: var(--sans);
+    color: var(--washi);
+    background:
+      radial-gradient(900px 420px at 50% -10%, rgba(224, 177, 90, 0.16), transparent 55%),
+      radial-gradient(700px 380px at 100% 100%, rgba(62, 107, 74, 0.22), transparent 45%),
+      linear-gradient(180deg, #24312b 0%, #1a2420 42%, #121a17 100%);
+    padding: 14px 12px calc(20px + env(safe-area-inset-bottom));
+  }
+  button, summary { font: inherit; color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  button:disabled { cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.02em; }
+  h1 { margin: 0; font-size: 28px; line-height: 1.05; }
+  h2 { margin: 0 0 6px; font-size: 22px; color: var(--ink); }
+  p { margin: 0; }
+  .eyebrow {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .sub { margin-top: 3px; color: var(--mist); font-size: 13px; line-height: 1.35; }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .brand { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .crest { width: 46px; height: 46px; flex: none; }
+  .score { min-width: 140px; }
+  .score-num {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 0.95;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+  }
+  .top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 10px 14px;
+    font-size: 15px;
+    line-height: 1.2;
+  }
+  .btn.primary { background: var(--cinnabar); color: #fffaf3; }
+  .btn.primary.ready { box-shadow: 0 0 0 2px var(--gold); }
+  .btn.ghost { background: transparent; border-color: rgba(244, 236, 220, 0.28); color: var(--washi); }
+  .btn.ink { background: var(--ink); color: var(--washi); width: 100%; }
+  .btn.line { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn:disabled { opacity: 0.48; }
+  .scene { height: 78px; margin: 8px 0 10px; }
+  .scene svg { width: 100%; height: 100%; display: block; }
+  .resources {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .res {
+    background: rgba(244, 236, 220, 0.07);
+    border: 1px solid rgba(244, 236, 220, 0.14);
+    border-radius: 12px;
+    padding: 8px 8px 7px;
+    min-width: 0;
+  }
+  .res .label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin: 0; }
+  .qty { margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+  .qty b { font-size: 16px; font-weight: 650; }
+  .cap { color: var(--mist); font-size: 11px; margin-left: 2px; }
+  .rate { margin: 1px 0 0; font-size: 12px; color: var(--mist); font-variant-numeric: tabular-nums; }
+  .rate.full { color: #e7b2a8; }
+  .bar { height: 4px; border-radius: 99px; background: rgba(244, 236, 220, 0.14); overflow: hidden; margin-top: 6px; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--gold); }
+  .res[data-k="wood"] .bar > span { background: #c48a5a; }
+  .res[data-k="stone"] .bar > span { background: #b7b1a4; }
+  .res[data-k="food"] .bar > span { background: #8fbf7a; }
+  .res[data-k="ink"] .bar > span { background: #d5deea; }
+  .status { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 10px; }
+  .status-copy { min-width: 0; flex: 1 1 180px; }
+  .status-copy p { line-height: 1.35; }
+  .status .bar { flex: 1 1 140px; margin-top: 0; height: 6px; }
+  #found-btn { flex: 1 1 200px; }
+  .stage { display: grid; gap: 12px; margin-top: 12px; }
+  .camp { display: flex; gap: 10px; align-items: center; margin: 0 0 8px; color: var(--mist); font-size: 13px; line-height: 1.4; }
+  .camp strong { color: var(--washi); font-weight: 650; }
+  .flame { animation: glow 2.6s ease-in-out infinite; }
+  .board {
+    background: linear-gradient(180deg, rgba(244, 236, 220, 0.06), rgba(244, 236, 220, 0.02));
+    border: 1px solid rgba(244, 236, 220, 0.14);
+    border-radius: 18px;
+    padding: 10px 8px 12px;
+  }
+  .terrace + .terrace { margin-top: 8px; }
+  .terrace[data-row="0"] { margin-inline: 10%; }
+  .terrace[data-row="1"] { margin-inline: 6%; }
+  .terrace[data-row="2"] { margin-inline: 3%; }
+  .terrace-name {
+    margin: 0 0 4px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+  .plots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .plot {
+    aspect-ratio: 1;
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(244, 236, 220, 0.12);
+    background: #2c261e;
+    color: var(--washi);
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    position: relative;
+  }
+  .plot svg { width: 30px; height: 30px; }
+  .plot .nm { font-size: 9px; line-height: 1.1; text-align: center; max-width: 100%; }
+  .plot.selected { box-shadow: inset 0 0 0 2px var(--gold); }
+  .plot.locked { background: #222a26; color: #b7c2bb; }
+  .plot.open { background: #3a3126; }
+  .plot.boosted::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 6px;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--gold);
+  }
+  .sheet {
+    background: var(--washi);
+    color: var(--ink);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+  }
+  .sheet .sub, .modal-card .sub { color: var(--ink-soft); }
+  .sheet .eyebrow, .modal-card .eyebrow { color: var(--gold-2); }
+  .hint { color: var(--ink-soft); font-size: 14px; line-height: 1.45; margin-bottom: 10px; }
+  .build {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 8px;
+    text-align: left;
+    background: #fffaf1;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 8px;
+    margin-top: 8px;
+    color: var(--ink);
+  }
+  .build:disabled { opacity: 0.55; }
+  .build b { display: block; font-size: 15px; }
+  .build small { display: block; color: var(--ink-soft); font-size: 12px; line-height: 1.35; margin-top: 2px; }
+  .costs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .cost {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    background: rgba(28, 25, 21, 0.06);
+    border-radius: 99px;
+    padding: 2px 6px;
+  }
+  .cost.short { background: rgba(182, 64, 50, 0.14); color: var(--cinnabar); }
+  .need { font-size: 12px; margin-top: 4px; color: var(--cinnabar); }
+  .need.ok { color: var(--moss); }
+  .foci { display: flex; gap: 6px; margin: 8px 0; }
+  .foci button {
+    flex: 1;
+    min-height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+  }
+  .foci button[aria-pressed="true"] { background: var(--ink); color: var(--washi); border-color: var(--ink); }
+  .out { font-variant-numeric: tabular-nums; font-size: 14px; margin: 6px 0; line-height: 1.4; }
+  .actions { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .pips { display: flex; gap: 4px; margin-top: 4px; }
+  .pips i { width: 14px; height: 4px; border-radius: 99px; background: rgba(28, 25, 21, 0.15); display: block; }
+  .pips i.on { background: var(--gold-2); }
+  .vault {
+    margin-top: 12px;
+    border: 1px solid rgba(244, 236, 220, 0.16);
+    border-radius: 14px;
+    padding: 4px 12px 10px;
+    background: rgba(244, 236, 220, 0.05);
+  }
+  .vault summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+  .vault p { color: var(--mist); font-size: 14px; line-height: 1.45; margin: 4px 0 8px; }
+  .vault-grid { display: grid; gap: 8px; }
+  .vault-card {
+    border: 1px solid rgba(244, 236, 220, 0.14);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .vault-card strong { font-family: var(--serif); font-size: 18px; }
+  .foot { margin: 14px 0 0; color: var(--mist); font-size: 12px; }
+  #modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(10, 14, 12, 0.62);
+    display: grid;
+    align-items: end;
+    padding: 12px 12px 78px;
+  }
+  #modal[hidden] { display: none; }
+  .modal-card {
+    width: min(460px, 100%);
+    margin: 0 auto;
+    background: var(--washi);
+    color: var(--ink);
+    border-radius: 18px;
+    padding: 20px 18px 16px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    max-height: min(78vh, 640px);
+    overflow: auto;
+  }
+  .modal-card p, .modal-card li { font-size: 15px; line-height: 1.45; }
+  .modal-card ul, .steps { margin: 8px 0 12px; padding-left: 18px; }
+  .modal-card li, .steps li { margin: 5px 0; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .row .btn { flex: 1 1 140px; }
+  #toasts {
+    position: fixed;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(420px, calc(100% - 24px));
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--washi);
+    color: var(--ink);
+    border-left: 3px solid var(--gold);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .gain { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  @keyframes glow { 50% { opacity: 0.55; } }
+  @keyframes rise { from { transform: translateY(4px); filter: brightness(1.25); } to { transform: none; filter: none; } }
+  .just-built { animation: rise 0.4s ease; }
+  @media (min-width: 800px) {
+    body { padding: 22px 24px 32px; }
+    .scene { height: 116px; }
+    .plot svg { width: 40px; height: 40px; }
+    .plot .nm { font-size: 11px; }
+    .terrace[data-row="0"] { margin-inline: 14%; }
+    .terrace[data-row="1"] { margin-inline: 8%; }
+    .terrace[data-row="2"] { margin-inline: 4%; }
+    #modal { align-items: center; padding: 24px 16px 78px; }
+    .vault-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 960px) {
+    .stage { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+    .sheet { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="none" stroke="#e0b15a" stroke-width="1.4"/>
+        <path d="M11 18 H37 M15 18 V34 M33 18 V34 M15 14 H33" fill="none" stroke="#f4ecdc" stroke-width="1.7"/>
+        <circle cx="24" cy="27" r="2.2" fill="#e0b15a"/>
+      </svg>
+      <div>
+        <p class="eyebrow">Rokumon</p>
+        <h1 id="settle-name">Cedar Fold</h1>
+        <p class="sub" id="seal-line">Settlement 1</p>
+      </div>
+    </div>
+    <div class="score">
+      <p class="eyebrow">Clan prosperity</p>
+      <p class="score-num" id="life">0</p>
+      <p class="sub" id="rate-p">+0.32/s</p>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="btn ghost" id="sound-btn" data-action="sound-toggle" aria-pressed="true">Sound on</button>
+      <button type="button" class="btn ghost" data-action="guide-open">How to play</button>
+    </div>
+  </header>
+
+  <div class="scene" aria-hidden="true">
+    <svg viewBox="0 0 800 140" preserveAspectRatio="xMidYMax slice">
+      <path d="M0 96 L130 48 L220 82 L340 34 L450 78 L560 30 L680 72 L800 46 V140 H0 Z" fill="#31443b"/>
+      <path d="M0 112 L90 78 L190 110 L310 68 L440 114 L580 74 L710 108 L800 90 V140 H0 Z" fill="#24332c"/>
+      <g fill="#15211c">
+        <path d="M60 116 L74 74 L88 116 Z"/><path d="M84 118 L100 62 L116 118 Z"/>
+        <path d="M150 120 L164 80 L178 120 Z"/><path d="M250 122 L266 70 L282 122 Z"/>
+        <path d="M500 120 L516 68 L532 120 Z"/><path d="M620 118 L636 78 L652 118 Z"/>
+        <path d="M700 120 L714 84 L728 120 Z"/>
+      </g>
+      <path d="M392 92 H452 M400 92 V126 M444 92 V126 M400 86 H444" fill="none" stroke="#f4ecdc" stroke-width="2"/>
+      <circle cx="422" cy="112" r="4" fill="#e0b15a" class="flame"/>
+    </svg>
+  </div>
+
+  <section class="resources" aria-label="Resources">
+    <article class="res" data-k="wood" title="Timber from the cedar slope">
+      <p class="label">Wood</p>
+      <p class="qty"><b id="q-wood">0</b><span class="cap" id="c-wood"></span></p>
+      <p class="rate" id="r-wood"></p>
+      <div class="bar"><span id="b-wood"></span></div>
+    </article>
+    <article class="res" data-k="stone" title="River stone and cliff rock">
+      <p class="label">Stone</p>
+      <p class="qty"><b id="q-stone">0</b><span class="cap" id="c-stone"></span></p>
+      <p class="rate" id="r-stone"></p>
+      <div class="bar"><span id="b-stone"></span></div>
+    </article>
+    <article class="res" data-k="food" title="Rice, greens, and what the slope can spare">
+      <p class="label">Food</p>
+      <p class="qty"><b id="q-food">0</b><span class="cap" id="c-food"></span></p>
+      <p class="rate" id="r-food"></p>
+      <div class="bar"><span id="b-food"></span></div>
+    </article>
+    <article class="res" data-k="ink" title="Spirit-ink. Shrines draw more of it.">
+      <p class="label">Ink</p>
+      <p class="qty"><b id="q-ink">0</b><span class="cap" id="c-ink"></span></p>
+      <p class="rate" id="r-ink"></p>
+      <div class="bar"><span id="b-ink"></span></div>
+    </article>
+  </section>
+
+  <section class="status">
+    <div class="status-copy">
+      <p class="eyebrow">This settlement</p>
+      <p><strong id="tier-name">Camp</strong> <span id="tier-detail"></span></p>
+      <p class="sub" id="bonus-line"></p>
+    </div>
+    <div class="bar" aria-hidden="true"><span id="tier-bar"></span></div>
+    <button type="button" class="btn primary" id="found-btn" data-action="prestige-ask" disabled>Founding at 160</button>
+  </section>
+
+  <div class="stage">
+    <div>
+      <div class="camp">
+        <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+          <path d="M6 28 H30 L26 16 H10 Z" fill="#3a3126" stroke="#f4ecdc" stroke-width="1.2"/>
+          <path class="flame" d="M18 22 C16 18 18 14 18 10 C22 14 24 16 22 22 Z" fill="#e0b15a"/>
+        </svg>
+        <p><strong>Clan camp.</strong> The fire gathers a little of everything, even before the first hut.</p>
+      </div>
+      <div class="board" id="board" role="group" aria-label="Village terraces"></div>
+    </div>
+    <aside class="sheet" id="sheet"></aside>
+  </div>
+
+  <details class="vault" id="vault">
+    <summary id="vault-sum">Clan vault</summary>
+    <p>Star-iron and moon-lacquer are not found on this slope. Other Rokumon games can send them. Both stay when you found a new settlement.</p>
+    <div class="vault-grid">
+      <div class="vault-card">
+        <p class="eyebrow">Star-iron</p>
+        <strong id="iron-n">0</strong>
+        <p id="temper-note"></p>
+        <button type="button" class="btn ink" id="temper-btn" data-action="temper">Temper at the forge</button>
+      </div>
+      <div class="vault-card">
+        <p class="eyebrow">Moon-lacquer</p>
+        <strong id="lacquer-n">0</strong>
+        <p id="offer-note"></p>
+        <button type="button" class="btn ink" id="offer-btn" data-action="offer">Offer at the shrine</button>
+      </div>
+    </div>
+  </details>
+  <p class="foot">Clan prosperity is the score. It stays when a settlement is founded.</p>
+</div>
+<div id="modal" hidden></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+(function () {
+  "use strict";
+
+  var SAVE_KEY = "rokumon-village-v1";
+  var GRANT_KEY = "rokumon-shared-goods";
+  var EIGHT_H = 8 * 3600 * 1000;
+  var PRESTIGE_AT = 160;
+  var RES = ["wood", "stone", "food", "ink"];
+  var COLS = 5;
+  var PLOT_COUNT = 20;
+  var ROW_NAME = ["Summit", "High path", "Mid slope", "Camp terrace"];
+  var PLOT_ORDER = [17, 16, 18, 15, 19, 12, 11, 13, 10, 14, 7, 6, 8, 5, 9, 2, 1, 3, 0, 4];
+  var NAMES = ["Cedar Fold", "Lantern Spur", "Ink Terrace", "Mist Gate", "Pine Hearth", "Stone Quiet", "Moon Path", "Heron Stair", "Ash Garden", "Bell Hollow", "Paper Slope", "Night Root"];
+  var TIERS = [
+    { name: "Camp", need: 0, plots: 8 },
+    { name: "Hamlet", need: 40, plots: 12 },
+    { name: "Village", need: 160, plots: 16 },
+    { name: "Hold", need: 700, plots: 20 },
+    { name: "Seat", need: 2200, plots: 20 }
+  ];
+  var CAMP = { wood: 0.45, stone: 0.28, food: 0.32, ink: 0.045, prosperity: 0.32 };
+  var BUILDINGS = {
+    hut: {
+      name: "Gatherer Hut",
+      short: "A cedar shelter. Set its focus to timber, stone, or food.",
+      max: 8, maxLevel: 5, tier: 0,
+      costs: [
+        { wood: 14 },
+        { wood: 30, stone: 14 },
+        { wood: 55, stone: 32, food: 16 },
+        { wood: 95, stone: 60, food: 36, ink: 8 },
+        { wood: 160, stone: 100, food: 60, ink: 18 }
+      ],
+      focusRate: [0.9, 1.55, 2.45, 3.7, 5.4],
+      sideRate: [0.06, 0.09, 0.12, 0.16, 0.2]
+    },
+    store: {
+      name: "Storehouse",
+      short: "A raised kura. It does not gather. It lets the slope hold more.",
+      max: 3, maxLevel: 5, tier: 0,
+      costs: [
+        { wood: 22, stone: 16 },
+        { wood: 40, stone: 34, food: 8 },
+        { wood: 72, stone: 62, food: 20 },
+        { wood: 120, stone: 100, food: 36, ink: 10 },
+        { wood: 180, stone: 150, food: 55, ink: 20 }
+      ],
+      cap: [
+        { wood: 90, stone: 70, food: 70, ink: 22 },
+        { wood: 190, stone: 150, food: 150, ink: 48 },
+        { wood: 320, stone: 250, food: 250, ink: 85 },
+        { wood: 480, stone: 380, food: 380, ink: 130 },
+        { wood: 680, stone: 540, food: 540, ink: 190 }
+      ]
+    },
+    training: {
+      name: "Training Grounds",
+      short: "A packed-earth dojo. Prosperity climbs faster when food stores are at least half full.",
+      max: 2, maxLevel: 5, tier: 1,
+      costs: [
+        { wood: 36, food: 22, ink: 4 },
+        { wood: 64, stone: 18, food: 40, ink: 8 },
+        { wood: 110, stone: 40, food: 70, ink: 16 },
+        { wood: 170, stone: 70, food: 110, ink: 28 },
+        { wood: 250, stone: 120, food: 160, ink: 44 }
+      ],
+      prosperity: [0.65, 1.15, 1.9, 2.9, 4.2]
+    },
+    tower: {
+      name: "Watchtower",
+      short: "A lantern post. Huts and shrines on the four adjacent plots work harder.",
+      max: 3, maxLevel: 4, tier: 2,
+      costs: [
+        { wood: 48, stone: 42, ink: 8 },
+        { wood: 85, stone: 78, ink: 14 },
+        { wood: 140, stone: 120, food: 30, ink: 24 },
+        { wood: 210, stone: 180, food: 60, ink: 40 }
+      ],
+      aura: [0.18, 0.3, 0.42, 0.55],
+      prosperity: [0.14, 0.26, 0.4, 0.58]
+    },
+    shrine: {
+      name: "Shrine",
+      short: "A wayside hokora. It draws spirit-ink. Moon-lacquer offered here is kept forever.",
+      max: 2, maxLevel: 5, tier: 2,
+      costs: [
+        { wood: 32, stone: 22, ink: 6 },
+        { wood: 58, stone: 42, ink: 14 },
+        { wood: 96, stone: 74, ink: 26 },
+        { wood: 150, stone: 120, ink: 46 },
+        { wood: 220, stone: 180, ink: 76 }
+      ],
+      ink: [0.2, 0.36, 0.58, 0.88, 1.25],
+      prosperity: [0.16, 0.3, 0.48, 0.72, 1.05]
+    },
+    forge: {
+      name: "Forge Annex",
+      short: "A side hall of the Rokumon forge. Its rite adds prosperity. Star-iron is tempered here.",
+      max: 1, maxLevel: 5, tier: 3,
+      costs: [
+        { wood: 100, stone: 100, ink: 28 },
+        { wood: 160, stone: 160, ink: 46 },
+        { wood: 240, stone: 230, food: 40, ink: 72 },
+        { wood: 340, stone: 330, food: 80, ink: 110 },
+        { wood: 480, stone: 460, food: 130, ink: 160 }
+      ],
+      prosperity: [0.85, 1.45, 2.2, 3.2, 4.6]
+    }
+  };
+  var ORDER = ["hut", "store", "training", "tower", "shrine", "forge"];
+  var SHORT = { hut: "Hut", store: "Store", training: "Dojo", tower: "Tower", shrine: "Shrine", forge: "Forge" };
+  var FOCUS_LABEL = { wood: "Timber", stone: "Quarry", food: "Paddy" };
+
+  function freshState() {
+    return {
+      version: 1,
+      name: "Cedar Fold",
+      settlement: 1,
+      res: { wood: 18, stone: 8, food: 12, ink: 2 },
+      starIron: 0,
+      moonLacquer: 0,
+      tempers: 0,
+      lacquerOffered: 0,
+      grid: new Array(PLOT_COUNT).fill(null),
+      run: 0,
+      lifetime: 0,
+      seals: 0,
+      bestRun: 0,
+      highestTier: 0,
+      knownTier: 0,
+      lastTick: Date.now(),
+      sawGuide: false,
+      sound: true,
+      selected: 17,
+      seenGrants: []
+    };
+  }
+
+  var state = freshState();
+  var confirmClear = false;
+  var flash = -1;
+  var modalKind = "";
+  var pendingAway = null;
+  var sentScore = -1;
+  var readied = false;
+  var ctx = null;
+  var master = null;
+  var acc = 0;
+  var saveAcc = 0;
+  var scoreAcc = 0;
+  var grantAcc = 0;
+  var lastFrame = 0;
+
+  function num(v, d, min, max) {
+    var n = Number(v);
+    if (!isFinite(n)) return d;
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function clampLevel(type, level) {
+    var def = BUILDINGS[type];
+    if (!def) return 1;
+    return Math.max(1, Math.min(def.maxLevel, Math.floor(level) || 1));
+  }
+
+  function load() {
+    var raw = null;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return; }
+    if (!raw) return;
+    var data = null;
+    try { data = JSON.parse(raw); }
+    catch (e) {
+      try { data = JSON.parse(localStorage.getItem(SAVE_KEY + "-bak") || "null"); }
+      catch (e2) { return; }
+    }
+    if (!data || data.version !== 1) return;
+    state.name = NAMES.indexOf(data.name) >= 0 ? data.name : "Cedar Fold";
+    state.settlement = num(data.settlement, 1, 1, 9999);
+    state.starIron = num(data.starIron, 0, 0, 99);
+    state.moonLacquer = num(data.moonLacquer, 0, 0, 99);
+    state.tempers = num(data.tempers, 0, 0, 12);
+    state.lacquerOffered = num(data.lacquerOffered, 0, 0, 8);
+    state.run = num(data.run, 0, 0, 1e12);
+    state.lifetime = num(data.lifetime, 0, 0, 1e12);
+    state.seals = num(data.seals, 0, 0, 999);
+    state.bestRun = num(data.bestRun, 0, 0, 1e12);
+    state.highestTier = num(data.highestTier, 0, 0, TIERS.length - 1);
+    state.knownTier = num(data.knownTier, 0, 0, TIERS.length - 1);
+    state.lastTick = num(data.lastTick, Date.now(), 0, Date.now() + 1000);
+    state.sawGuide = !!data.sawGuide;
+    state.sound = data.sound !== false;
+    state.selected = num(data.selected, 17, 0, PLOT_COUNT - 1);
+    state.seenGrants = Array.isArray(data.seenGrants) ? data.seenGrants.slice(-50).map(function (id) { return String(id).slice(0, 80); }) : [];
+    RES.forEach(function (k) {
+      state.res[k] = num(data.res && data.res[k], state.res[k], 0, 1e9);
+    });
+    state.grid = new Array(PLOT_COUNT).fill(null);
+    if (Array.isArray(data.grid)) {
+      for (var i = 0; i < PLOT_COUNT; i++) {
+        var b = data.grid[i];
+        if (!b || !BUILDINGS[b.type]) continue;
+        state.grid[i] = {
+          type: b.type,
+          level: clampLevel(b.type, b.level),
+          focus: b.focus === "stone" || b.focus === "food" ? b.focus : "wood"
+        };
+      }
+    }
+  }
+
+  function save() {
+    state.lastTick = Date.now();
+    try {
+      var prev = localStorage.getItem(SAVE_KEY);
+      if (prev) localStorage.setItem(SAVE_KEY + "-bak", prev);
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch (e) { /* private mode or quota */ }
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return "&#" + c.charCodeAt(0) + ";";
+    });
+  }
+
+  function fmtInt(n) { return Math.floor(n).toLocaleString("en-US"); }
+  function fmtQty(n) {
+    if (n >= 100) return fmtInt(n);
+    var t = Math.floor(n * 10) / 10;
+    if (Math.abs(t - Math.round(t)) < 0.001) return String(Math.round(t));
+    return t.toFixed(1);
+  }
+  function fmtRun(n) {
+    if (n < 1000) {
+      var t = Math.floor(n * 10) / 10;
+      return t.toFixed(1);
+    }
+    return fmtInt(n);
+  }
+  function fmtPer(n) {
+    if (n < 0.005) return "+0";
+    if (n >= 10) return "+" + n.toFixed(1);
+    return "+" + n.toFixed(2);
+  }
+  function fmtDur(ms) {
+    var s = Math.floor(ms / 1000);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) return h + "h " + m + "m";
+    if (m > 0) return m + "m " + sec + "s";
+    return sec + "s";
+  }
+
+  function eachBuilding(fn) {
+    for (var i = 0; i < PLOT_COUNT; i++) if (state.grid[i]) fn(state.grid[i], i);
+  }
+  function countType(type) {
+    var n = 0;
+    eachBuilding(function (b) { if (b.type === type) n++; });
+    return n;
+  }
+  function currentTierIndex() {
+    var i = 0;
+    for (var t = 0; t < TIERS.length; t++) if (state.run >= TIERS[t].need) i = t;
+    return i;
+  }
+  function isOpen(i) {
+    var order = PLOT_ORDER.indexOf(i);
+    return order > -1 && order < TIERS[currentTierIndex()].plots;
+  }
+  function opensAt(i) {
+    var order = PLOT_ORDER.indexOf(i);
+    for (var t = 0; t < TIERS.length; t++) if (order < TIERS[t].plots) return TIERS[t].name;
+    return "Hold";
+  }
+  function neighbors(i) {
+    var r = Math.floor(i / COLS);
+    var c = i % COLS;
+    var out = [];
+    if (r > 0) out.push(i - COLS);
+    if (r < 3) out.push(i + COLS);
+    if (c > 0) out.push(i - 1);
+    if (c < 4) out.push(i + 1);
+    return out;
+  }
+  function auraAt(i) {
+    var a = 0;
+    var list = neighbors(i);
+    for (var n = 0; n < list.length; n++) {
+      var b = state.grid[list[n]];
+      if (b && b.type === "tower") a += BUILDINGS.tower.aura[b.level - 1];
+    }
+    return Math.min(1, a);
+  }
+  function shrineLevels() {
+    var n = 0;
+    eachBuilding(function (b) { if (b.type === "shrine") n += b.level; });
+    return n;
+  }
+  function sealMult() { return 1 + state.seals * 0.15; }
+  function temperMult() { return 1 + state.tempers * 0.04; }
+  function lacquerMult() { return 1 + state.lacquerOffered * 0.12; }
+  function globalMult() { return sealMult() * temperMult(); }
+  function capsOf() {
+    var c = { wood: 70, stone: 50, food: 55, ink: 20 };
+    eachBuilding(function (b) {
+      if (b.type !== "store") return;
+      var add = BUILDINGS.store.cap[b.level - 1];
+      RES.forEach(function (k) { c[k] += add[k]; });
+    });
+    var m = 1 + state.seals * 0.08;
+    RES.forEach(function (k) { c[k] = Math.floor(c[k] * m); });
+    return c;
+  }
+  function foodFactor() {
+    var cap = capsOf().food;
+    if (cap <= 0) return 1;
+    var ratio = state.res.food / cap;
+    if (ratio >= 0.5) return 1;
+    return 0.45 + 0.55 * (ratio / 0.5);
+  }
+  function rates() {
+    var g = globalMult();
+    var inkM = g * lacquerMult();
+    var prospM = g * (1 + 0.025 * shrineLevels());
+    var foodF = foodFactor();
+    var out = {
+      wood: CAMP.wood * g,
+      stone: CAMP.stone * g,
+      food: CAMP.food * g,
+      ink: CAMP.ink * inkM,
+      prosperity: CAMP.prosperity * prospM
+    };
+    eachBuilding(function (b, i) {
+      var aura = 1 + auraAt(i);
+      var L = b.level - 1;
+      var def = BUILDINGS[b.type];
+      if (b.type === "hut") {
+        var focus = b.focus || "wood";
+        ["wood", "stone", "food"].forEach(function (k) {
+          var rate = (k === focus ? def.focusRate[L] : def.sideRate[L]) * g * aura;
+          out[k] += rate;
+        });
+      } else if (b.type === "training") out.prosperity += def.prosperity[L] * prospM * foodF;
+      else if (b.type === "tower") out.prosperity += def.prosperity[L] * prospM;
+      else if (b.type === "forge") out.prosperity += def.prosperity[L] * prospM;
+      else if (b.type === "shrine") {
+        out.ink += def.ink[L] * inkM * aura;
+        out.prosperity += def.prosperity[L] * prospM;
+      }
+    });
+    return out;
+  }
+  function tick(dt) {
+    if (dt <= 0) return;
+    var r = rates();
+    var caps = capsOf();
+    RES.forEach(function (k) {
+      if (state.res[k] < caps[k]) state.res[k] = Math.min(caps[k], state.res[k] + r[k] * dt);
+    });
+    state.run += r.prosperity * dt;
+    state.lifetime += r.prosperity * dt;
+    if (state.run > state.bestRun) state.bestRun = state.run;
+  }
+  function simulate(seconds) {
+    var left = seconds;
+    while (left > 0.0001) {
+      var dt = Math.min(5, left);
+      tick(dt);
+      left -= dt;
+    }
+  }
+  function grantProgress(n) {
+    state.run += n;
+    state.lifetime += n;
+    if (state.run > state.bestRun) state.bestRun = state.run;
+  }
+  function canAfford(cost) {
+    for (var i = 0; i < RES.length; i++) {
+      var k = RES[i];
+      if ((cost[k] || 0) > state.res[k] + 0.001) return false;
+    }
+    return true;
+  }
+  function pay(cost) {
+    RES.forEach(function (k) { state.res[k] = Math.max(0, state.res[k] - (cost[k] || 0)); });
+  }
+  function costFrom(el) {
+    return {
+      wood: +el.dataset.wood || 0,
+      stone: +el.dataset.stone || 0,
+      food: +el.dataset.food || 0,
+      ink: +el.dataset.ink || 0
+    };
+  }
+  function costAttrs(cost) {
+    return ' data-wood="' + (cost.wood || 0) + '" data-stone="' + (cost.stone || 0) + '" data-food="' + (cost.food || 0) + '" data-ink="' + (cost.ink || 0) + '"';
+  }
+  function costHTML(cost) {
+    var bits = [];
+    RES.forEach(function (k) {
+      var n = cost[k] || 0;
+      if (!n) return;
+      bits.push('<span class="cost" data-k="' + k + '" data-n="' + n + '">' + n + " " + k + "</span>");
+    });
+    return '<span class="costs">' + bits.join("") + "</span>";
+  }
+  function needText(cost) {
+    var parts = [];
+    RES.forEach(function (k) {
+      var c = cost[k] || 0;
+      if (c > state.res[k] + 0.001) parts.push(Math.ceil(c - state.res[k]) + " " + k);
+    });
+    return parts.length ? "Need " + parts.join(", ") : "Ready";
+  }
+  function startRes(seals) {
+    return {
+      wood: 18 + seals * 10,
+      stone: 8 + seals * 6,
+      food: 12 + seals * 6,
+      ink: 2 + Math.min(8, seals)
+    };
+  }
+  function applyStartRes() {
+    var s = startRes(state.seals);
+    var caps = capsOf();
+    RES.forEach(function (k) { state.res[k] = Math.min(caps[k], s[k]); });
+  }
+  function nextName() {
+    var pool = NAMES.filter(function (n) { return n !== state.name; });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function nothingBuilt() {
+    for (var i = 0; i < PLOT_COUNT; i++) if (state.grid[i]) return false;
+    return true;
+  }
+  function tierProgress() {
+    var i = currentTierIndex();
+    if (i >= TIERS.length - 1) return { pct: 1, detail: fmtRun(state.run) + " · seat of the clan" };
+    var next = TIERS[i + 1];
+    var span = next.need - TIERS[i].need;
+    var pct = span <= 0 ? 1 : Math.max(0, Math.min(1, (state.run - TIERS[i].need) / span));
+    return { pct: pct, detail: fmtRun(state.run) + " / " + next.need + " to " + next.name };
+  }
+  function bonusLine() {
+    var bits = [];
+    if (state.seals) bits.push("Seals +" + Math.round(state.seals * 15) + "%");
+    if (state.tempers) bits.push("Edge +" + Math.round(state.tempers * 4) + "%");
+    if (state.lacquerOffered) bits.push("Lacquer +" + Math.round(state.lacquerOffered * 12) + "% ink");
+    if (!bits.length) return "No permanent bonuses yet. A seal is kept when you found anew.";
+    return bits.join(" · ");
+  }
+  function syncTier(announce) {
+    var i = currentTierIndex();
+    if (i > state.highestTier) state.highestTier = i;
+    if (i > state.knownTier) {
+      state.knownTier = i;
+      hubEvent("tier-reached", { tier: i, name: TIERS[i].name });
+      if (announce) {
+        toast(TIERS[i].name + " — new ground is open on the slope.");
+        play("tier");
+        renderBoard();
+        renderSheet();
+      }
+      return TIERS[i].name;
+    }
+    return null;
+  }
+
+  function icon(type) {
+    var c = 'viewBox="0 0 64 64" aria-hidden="true"';
+    if (type === "hut") return '<svg ' + c + '><path d="M8 30 L32 12 L56 30 V34 H8 Z" fill="#6b3a2a"/><rect x="16" y="32" width="32" height="20" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><path d="M30 52 V40 H38 V52" fill="#1c1915"/><rect x="20" y="38" width="6" height="6" fill="#e0b15a"/></svg>';
+    if (type === "store") return '<svg ' + c + '><rect x="14" y="24" width="36" height="22" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><path d="M10 24 H54 L46 14 H18 Z" fill="#1c1915"/><rect x="18" y="46" width="4" height="8" fill="#1c1915"/><rect x="42" y="46" width="4" height="8" fill="#1c1915"/><rect x="30" y="32" width="8" height="14" fill="#6b3a2a"/></svg>';
+    if (type === "training") return '<svg ' + c + '><rect x="12" y="16" width="40" height="34" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><circle cx="32" cy="32" r="8" fill="none" stroke="#b64032" stroke-width="2"/><path d="M12 16 L32 8 L52 16" fill="#1c1915"/></svg>';
+    if (type === "tower") return '<svg ' + c + '><rect x="28" y="22" width="8" height="30" fill="#cbbfa6" stroke="#1c1915" stroke-width="2"/><path d="M20 24 L32 10 L44 24 Z" fill="#6b3a2a"/><circle cx="32" cy="20" r="3" fill="#e0b15a"/></svg>';
+    if (type === "shrine") return '<svg ' + c + '><path d="M8 26 H56" stroke="#b64032" stroke-width="4"/><path d="M14 26 V50 M50 26 V50" stroke="#b64032" stroke-width="3"/><path d="M12 20 H52 L48 14 H16 Z" fill="#1c1915"/><rect x="28" y="36" width="8" height="10" fill="#f4ecdc" stroke="#1c1915"/></svg>';
+    if (type === "forge") return '<svg ' + c + '><path d="M10 30 H40 L36 18 H14 Z" fill="#1c1915"/><rect x="12" y="30" width="30" height="18" fill="#3a3126" stroke="#f4ecdc" stroke-width="2"/><rect x="40" y="12" width="8" height="22" fill="#6b3a2a"/><rect x="20" y="36" width="10" height="8" fill="#e07a32"/></svg>';
+    if (type === "plus") return '<svg ' + c + '><circle cx="32" cy="32" r="16" fill="none" stroke="#e0b15a" stroke-width="2"/><path d="M32 22 V42 M22 32 H42" stroke="#e0b15a" stroke-width="2"/></svg>';
+    return '<svg ' + c + '><path d="M16 28 H48 M20 28 V44 M44 28 V44" stroke="#c9d2cb" stroke-width="2" fill="none"/><path d="M24 28 V22 a8 8 0 0 1 16 0 V28" stroke="#c9d2cb" stroke-width="2" fill="none"/></svg>';
+  }
+  function pips(level, max) {
+    var s = "";
+    for (var i = 1; i <= max; i++) s += '<i class="' + (i <= level ? "on" : "") + '"></i>';
+    return '<span class="pips">' + s + "</span>";
+  }
+  function describe(b, index, level) {
+    var g = globalMult();
+    var inkM = g * lacquerMult();
+    var prospM = g * (1 + 0.025 * shrineLevels());
+    var aura = 1 + auraAt(index);
+    var L = level - 1;
+    var def = BUILDINGS[b.type];
+    if (b.type === "hut") {
+      var focus = b.focus || "wood";
+      return ["wood", "stone", "food"].map(function (k) {
+        var rate = (k === focus ? def.focusRate[L] : def.sideRate[L]) * g * aura;
+        return fmtPer(rate) + "/s " + k;
+      }).join(" · ");
+    }
+    if (b.type === "store") {
+      var add = def.cap[L];
+      return "+" + add.wood + " wood, +" + add.stone + " stone, +" + add.food + " food, +" + add.ink + " ink cap";
+    }
+    if (b.type === "training") return fmtPer(def.prosperity[L] * prospM * foodFactor()) + "/s prosperity";
+    if (b.type === "tower") return fmtPer(def.prosperity[L] * prospM) + "/s prosperity · neighbors +" + Math.round(def.aura[L] * 100) + "%";
+    if (b.type === "shrine") return fmtPer(def.ink[L] * inkM * aura) + "/s ink · " + fmtPer(def.prosperity[L] * prospM) + "/s prosperity";
+    if (b.type === "forge") return fmtPer(def.prosperity[L] * prospM) + "/s prosperity";
+    return "";
+  }
+
+  function renderBoard() {
+    var html = "";
+    for (var r = 0; r < 4; r++) {
+      html += '<div class="terrace" data-row="' + r + '"><p class="terrace-name">' + ROW_NAME[r] + '</p><div class="plots">';
+      for (var c = 0; c < COLS; c++) {
+        var i = r * COLS + c;
+        var open = isOpen(i);
+        var b = state.grid[i];
+        var cls = "plot";
+        if (!open) cls += " locked";
+        else if (!b) cls += " open";
+        if (i === state.selected) cls += " selected";
+        if (i === flash) cls += " just-built";
+        if (open && b && (b.type === "hut" || b.type === "shrine") && auraAt(i) > 0) cls += " boosted";
+        var label = !open ? opensAt(i) : b ? SHORT[b.type] + " " + b.level : "Open";
+        var graphic = !open ? icon("lock") : b ? icon(b.type) : icon("plus");
+        var pressed = i === state.selected ? "true" : "false";
+        html += '<button type="button" class="' + cls + '" data-action="select" data-index="' + i + '" aria-pressed="' + pressed + '" aria-label="' + esc(label) + '">' + graphic + '<span class="nm">' + esc(label) + "</span></button>";
+      }
+      html += "</div></div>";
+    }
+    document.getElementById("board").innerHTML = html;
+  }
+
+  function renderSheet() {
+    var root = document.getElementById("sheet");
+    var i = state.selected;
+    if (!isOpen(i)) {
+      root.innerHTML = "<h2>Misted ground</h2><p class='hint'>This plot opens at " + esc(opensAt(i)) + ".</p>";
+      return;
+    }
+    var b = state.grid[i];
+    if (!b) root.innerHTML = buildListHTML();
+    else root.innerHTML = upgradeHTML(b, i);
+  }
+
+  function buildListHTML() {
+    var hint = nothingBuilt()
+      ? "The ground in front of the camp is open. A gatherer hut is the usual first raising."
+      : "Open ground on the " + ROW_NAME[Math.floor(state.selected / COLS)].toLowerCase() + ". Choose what to raise.";
+    var html = "<p class='eyebrow'>Open plot</p><h2>Raise a building</h2><p class='hint'>" + esc(hint) + "</p>";
+    ORDER.forEach(function (type) {
+      var def = BUILDINGS[type];
+      var tierLocked = currentTierIndex() < def.tier;
+      var maxed = countType(type) >= def.max;
+      var block = tierLocked || maxed;
+      var reason = tierLocked ? "Opens at " + TIERS[def.tier].name : maxed ? "All of these already stand" : "";
+      var cost = def.costs[0];
+      html += '<button type="button" class="build" data-action="place" data-type="' + type + '"' + costAttrs(cost) + (block ? ' data-block="1" disabled' : "") + ">";
+      html += icon(type);
+      html += "<span><b>" + esc(def.name) + "</b><small>" + esc(def.short) + "</small>";
+      html += costHTML(cost);
+      html += '<small class="need"' + costAttrs(cost) + (block ? ' data-block="1"' : "") + ">" + esc(block ? reason : needText(cost)) + "</small>";
+      html += "<small>" + countType(type) + " / " + def.max + "</small></span></button>";
+    });
+    return html;
+  }
+
+  function upgradeHTML(b, index) {
+    var def = BUILDINGS[b.type];
+    var maxed = b.level >= def.maxLevel;
+    var html = "<p class='eyebrow'>" + esc(ROW_NAME[Math.floor(index / COLS)]) + "</p>";
+    html += "<h2>" + esc(def.name) + "</h2>";
+    html += pips(b.level, def.maxLevel);
+    html += "<p class='hint'>" + esc(def.short) + "</p>";
+    if (b.type === "hut") {
+      html += '<div class="foci" role="group" aria-label="Hut focus">';
+      ["wood", "stone", "food"].forEach(function (f) {
+        html += '<button type="button" data-action="focus" data-focus="' + f + '" aria-pressed="' + (b.focus === f ? "true" : "false") + '">' + FOCUS_LABEL[f] + "</button>";
+      });
+      html += "</div>";
+    }
+    html += '<p class="out" id="out-now">Now · ' + esc(describe(b, index, b.level)) + "</p>";
+    if (!maxed) html += '<p class="out" id="out-next">Next · ' + esc(describe(b, index, b.level + 1)) + "</p>";
+    else html += '<p class="out">Fully raised.</p>';
+    if (b.type === "training") html += '<p class="sub" id="food-note"></p>';
+    if ((b.type === "hut" || b.type === "shrine") && auraAt(index) > 0) {
+      html += '<p class="sub" id="aura-note">Neighboring watchtowers add ' + Math.round(auraAt(index) * 100) + "%.</p>";
+    }
+    if (!maxed) {
+      var cost = def.costs[b.level];
+      html += costHTML(cost);
+      html += '<p class="need"' + costAttrs(cost) + ">" + esc(needText(cost)) + "</p>";
+      html += '<div class="actions"><button type="button" class="btn ink" data-action="upgrade"' + costAttrs(cost) + ">Raise to level " + (b.level + 1) + "</button>";
+    } else html += '<div class="actions">';
+    if (confirmClear) {
+      html += '<p class="hint">Clear this plot? Half the first cost returns, if the stores have room.</p>';
+      html += '<button type="button" class="btn primary" data-action="clear-yes">Clear it</button>';
+      html += '<button type="button" class="btn line" data-action="clear-no">Keep it</button>';
+    } else {
+      html += '<button type="button" class="btn line" data-action="clear-ask">Clear plot</button>';
+    }
+    html += "</div>";
+    if (b.type === "forge") html += "<p class='sub'>Star-iron in the clan vault is tempered below. The edge is kept forever.</p>";
+    if (b.type === "shrine") html += "<p class='sub'>Moon-lacquer in the clan vault is offered below. The ink blessing is kept forever.</p>";
+    return html;
+  }
+
+  function paint() {
+    var r = rates();
+    var caps = capsOf();
+    var tp = tierProgress();
+    document.getElementById("settle-name").textContent = state.name;
+    document.getElementById("seal-line").textContent = "Settlement " + state.settlement + " · " + state.seals + (state.seals === 1 ? " seal" : " seals");
+    document.getElementById("life").textContent = fmtRun(state.lifetime);
+    document.getElementById("rate-p").textContent = fmtPer(r.prosperity) + "/s prosperity";
+    document.getElementById("tier-name").textContent = TIERS[currentTierIndex()].name;
+    document.getElementById("tier-detail").textContent = tp.detail;
+    document.getElementById("tier-bar").style.width = (tp.pct * 100) + "%";
+    document.getElementById("bonus-line").textContent = bonusLine() + " · best " + fmtInt(state.bestRun);
+    RES.forEach(function (k) {
+      document.getElementById("q-" + k).textContent = fmtQty(state.res[k]);
+      document.getElementById("c-" + k).textContent = "/ " + fmtInt(caps[k]);
+      var full = state.res[k] >= caps[k] - 0.05;
+      var rateEl = document.getElementById("r-" + k);
+      rateEl.textContent = full ? "full" : fmtPer(r[k]) + "/s";
+      rateEl.classList.toggle("full", full);
+      var pct = caps[k] > 0 ? Math.max(0, Math.min(1, state.res[k] / caps[k])) : 0;
+      document.getElementById("b-" + k).style.width = (pct * 100) + "%";
+    });
+    var found = document.getElementById("found-btn");
+    var ready = state.run >= PRESTIGE_AT;
+    found.disabled = !ready;
+    found.classList.toggle("ready", ready);
+    found.textContent = ready ? "Found a new settlement" : "Founding at " + PRESTIGE_AT;
+    var soundBtn = document.getElementById("sound-btn");
+    soundBtn.textContent = state.sound ? "Sound on" : "Sound off";
+    soundBtn.setAttribute("aria-pressed", state.sound ? "true" : "false");
+    document.getElementById("iron-n").textContent = String(state.starIron);
+    document.getElementById("lacquer-n").textContent = String(state.moonLacquer);
+    document.getElementById("vault-sum").textContent = "Clan vault · star-iron " + state.starIron + " · moon-lacquer " + state.moonLacquer;
+    var hasForge = countType("forge") > 0;
+    var hasShrine = countType("shrine") > 0;
+    document.getElementById("temper-btn").disabled = !(state.starIron >= 1 && hasForge && state.tempers < 12);
+    document.getElementById("offer-btn").disabled = !(state.moonLacquer >= 1 && hasShrine && state.lacquerOffered < 8);
+    document.getElementById("temper-note").textContent = !hasForge
+      ? "Raise the forge annex (Hold) before tempering. " + state.tempers + " / 12 edge."
+      : state.tempers >= 12
+        ? "The edge is as keen as it can be held."
+        : "Each temper is +4% to every yield, kept forever. " + state.tempers + " / 12.";
+    document.getElementById("offer-note").textContent = !hasShrine
+      ? "Raise a shrine (Village) before offering. " + state.lacquerOffered + "/8 blessings."
+      : "Each offering is +12% ink, kept forever. " + state.lacquerOffered + " / 8.";
+    document.querySelectorAll(".cost").forEach(function (el) {
+      var k = el.dataset.k;
+      var n = Number(el.dataset.n);
+      el.classList.toggle("short", state.res[k] + 0.001 < n);
+    });
+    document.querySelectorAll(".need").forEach(function (el) {
+      if (el.dataset.block === "1") return;
+      var line = needText(costFrom(el));
+      el.textContent = line;
+      el.classList.toggle("ok", line === "Ready");
+    });
+    document.querySelectorAll("[data-action='place'], [data-action='upgrade']").forEach(function (btn) {
+      if (btn.dataset.block === "1") { btn.disabled = true; return; }
+      btn.disabled = !canAfford(costFrom(btn));
+    });
+    var nowEl = document.getElementById("out-now");
+    var b = state.grid[state.selected];
+    if (nowEl && b) nowEl.textContent = "Now · " + describe(b, state.selected, b.level);
+    var nextEl = document.getElementById("out-next");
+    if (nextEl && b && b.level < BUILDINGS[b.type].maxLevel) nextEl.textContent = "Next · " + describe(b, state.selected, b.level + 1);
+    var foodNote = document.getElementById("food-note");
+    if (foodNote) {
+      var f = foodFactor();
+      foodNote.textContent = f >= 0.999
+        ? "Food stores are healthy. Training is at full strength."
+        : "Food stores are low. Training is at " + Math.round(f * 100) + "% strength.";
+    }
+    document.querySelectorAll(".plot").forEach(function (el) {
+      var i = Number(el.dataset.index);
+      var plot = state.grid[i];
+      el.classList.toggle("boosted", !!(plot && (plot.type === "hut" || plot.type === "shrine") && auraAt(i) > 0));
+    });
+  }
+
+  function renderAll() {
+    renderBoard();
+    renderSheet();
+    paint();
+  }
+
+  function toast(msg) {
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    document.getElementById("toasts").appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3400);
+  }
+
+  function openModal(kind, html) {
+    modalKind = kind;
+    var root = document.getElementById("modal");
+    root.hidden = false;
+    root.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true">' + html + "</div>";
+    var btn = root.querySelector("button");
+    if (btn) btn.focus();
+  }
+  function closeModal() {
+    modalKind = "";
+    var root = document.getElementById("modal");
+    root.hidden = true;
+    root.innerHTML = "";
+  }
+  function finishGuide() {
+    if (!state.sawGuide) {
+      state.sawGuide = true;
+      save();
+    }
+    if (pendingAway) {
+      var away = pendingAway;
+      pendingAway = null;
+      openAway(away);
+    }
+  }
+  function openGuide() {
+    openModal("guide", [
+      "<p class='eyebrow'>How to play</p>",
+      "<h2>A camp on the cedar slope</h2>",
+      "<ol class='steps'>",
+      "<li>The camp fire already gathers wood, stone, food, and a thread of spirit-ink.</li>",
+      "<li>Tap open ground, then raise a building. A gatherer hut can focus on timber, stone, or food.</li>",
+      "<li>Storehouses hold more. Watchtowers help their neighbors. The shrine draws ink. Training grounds and the forge annex raise prosperity.</li>",
+      "<li>Clan prosperity is the score. At 160 on this slope you may found a new settlement. You keep a seal — a permanent bonus — plus any rare metals.</li>",
+      "<li>Star-iron and moon-lacquer are not gathered here. Other Rokumon games can send them to the clan vault.</li>",
+      "</ol>",
+      "<div class='row'><button type='button' class='btn primary' data-action='guide-close'>Begin</button></div>"
+    ].join(""));
+  }
+  function openPrestige() {
+    if (state.run < PRESTIGE_AT) { play("deny"); return; }
+    var seals = state.seals + 1;
+    openModal("prestige", [
+      "<p class='eyebrow'>Founding</p>",
+      "<h2>Leave this slope</h2>",
+      "<p>The camp, the buildings, and this settlement’s stores return to mist.</p>",
+      "<ul>",
+      "<li>Seal " + state.seals + " → " + seals + ". Yields become +" + (seals * 15) + "%.</li>",
+      "<li>Clan prosperity stays at " + fmtInt(state.lifetime) + ". This run is already counted.</li>",
+      "<li>Star-iron, moon-lacquer, tempering, and lacquer offerings stay.</li>",
+      "<li>The next camp starts a little richer.</li>",
+      "</ul>",
+      "<p class='sub'>The hold and the forge annex open at " + TIERS[3].need + " prosperity. You can stay and climb, or found now.</p>",
+      "<div class='row'><button type='button' class='btn line' data-action='modal-close'>Stay</button>",
+      "<button type='button' class='btn primary' data-action='prestige-confirm'>Found the next settlement</button></div>"
+    ].join(""));
+  }
+  function openAway(info) {
+    if (!info) return;
+    var lines = "";
+    RES.forEach(function (k) {
+      var gain = Math.max(0, state.res[k] - info.before[k]);
+      var note = "";
+      if (info.before[k] >= info.capsBefore[k] - 0.5) note = " · already full";
+      else if (state.res[k] >= capsOf()[k] - 0.5 && gain > 0) note = " · filled";
+      lines += "<div class='gain'><span>" + k + "</span><span>+" + fmtQty(gain) + note + "</span></div>";
+    });
+    var lifeGain = Math.max(0, state.lifetime - info.before.life);
+    lines += "<div class='gain'><span>Prosperity</span><span>+" + fmtQty(lifeGain) + "</span></div>";
+    var extra = "";
+    if (info.limited) extra += "<p class='sub'>Shown time is capped at eight hours.</p>";
+    if (info.crossed) extra += "<p class='sub'>The slope reached " + esc(info.crossed) + " while you were away.</p>";
+    openModal("away", [
+      "<p class='eyebrow'>While you were away</p>",
+      "<h2>The slope kept working</h2>",
+      "<p>For " + fmtDur(info.ms) + ".</p>",
+      lines,
+      extra,
+      "<div class='row'><button type='button' class='btn primary' data-action='modal-close'>Return to the village</button></div>"
+    ].join(""));
+  }
+  function mergeAway(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    return { ms: Math.min(EIGHT_H, a.ms + b.ms), limited: a.limited || b.limited, before: a.before, capsBefore: a.capsBefore, crossed: b.crossed || a.crossed };
+  }
+  function handleAway(info) {
+    if (!info) return;
+    if (!state.sawGuide || modalKind === "guide") pendingAway = mergeAway(pendingAway, info);
+    else if (!modalKind) openAway(info);
+    else pendingAway = mergeAway(pendingAway, info);
+  }
+  function catchUp() {
+    var now = Date.now();
+    if (!state.lastTick || state.lastTick < 1e11) { state.lastTick = now; return null; }
+    var ms = now - state.lastTick;
+    state.lastTick = now;
+    if (!isFinite(ms) || ms < 800) return null;
+    var limited = ms > EIGHT_H;
+    var simMs = Math.min(ms, EIGHT_H);
+    var before = { wood: state.res.wood, stone: state.res.stone, food: state.res.food, ink: state.res.ink, life: state.lifetime };
+    var capsBefore = capsOf();
+    simulate(simMs / 1000);
+    var crossed = syncTier(simMs < 15000);
+    if (simMs < 15000) return null;
+    return { ms: simMs, limited: limited, before: before, capsBefore: capsBefore, crossed: crossed };
+  }
+
+  function place(type) {
+    var i = state.selected;
+    var def = BUILDINGS[type];
+    if (!def || !isOpen(i) || state.grid[i]) return;
+    if (currentTierIndex() < def.tier || countType(type) >= def.max) { play("deny"); return; }
+    var cost = def.costs[0];
+    if (!canAfford(cost)) { play("deny"); toast(needText(cost) + "."); return; }
+    pay(cost);
+    state.grid[i] = { type: type, level: 1, focus: "wood" };
+    grantProgress(14);
+    flash = i;
+    play("place");
+    toast(def.name + " raised.");
+    renderAll();
+    save();
+    syncTier(true);
+  }
+  function upgrade() {
+    var i = state.selected;
+    var b = state.grid[i];
+    if (!b) return;
+    var def = BUILDINGS[b.type];
+    if (b.level >= def.maxLevel) return;
+    var cost = def.costs[b.level];
+    if (!canAfford(cost)) { play("deny"); toast(needText(cost) + "."); return; }
+    pay(cost);
+    b.level += 1;
+    grantProgress(8 + 6 * b.level);
+    play("upgrade");
+    toast(def.name + " is now level " + b.level + ".");
+    renderAll();
+    save();
+    syncTier(true);
+  }
+  function clearPlot() {
+    var i = state.selected;
+    var b = state.grid[i];
+    if (!b) return;
+    var refund = {};
+    var base = BUILDINGS[b.type].costs[0];
+    RES.forEach(function (k) { refund[k] = Math.floor((base[k] || 0) * 0.5); });
+    state.grid[i] = null;
+    var caps = capsOf();
+    var lost = false;
+    RES.forEach(function (k) {
+      var add = refund[k] || 0;
+      var room = Math.max(0, caps[k] - state.res[k]);
+      if (add > room + 0.001) lost = true;
+      state.res[k] += Math.min(add, room);
+    });
+    confirmClear = false;
+    play("place");
+    toast(lost ? "Plot cleared. The stores could not hold every returned good." : "Plot cleared.");
+    renderAll();
+    save();
+  }
+  function found() {
+    if (state.run < PRESTIGE_AT) return;
+    var runProsperity = state.run;
+    var tier = currentTierIndex();
+    state.seals += 1;
+    state.settlement += 1;
+    state.name = nextName();
+    state.run = 0;
+    state.knownTier = 0;
+    state.grid = new Array(PLOT_COUNT).fill(null);
+    state.selected = 17;
+    confirmClear = false;
+    applyStartRes();
+    play("prestige");
+    toast(state.name + ". Seal " + state.seals + " stays with the clan.");
+    hubEvent("settlement-founded", {
+      seals: state.seals,
+      runProsperity: Math.floor(runProsperity),
+      lifetime: Math.floor(state.lifetime),
+      tier: tier
+    });
+    hubGameOver(state.lifetime);
+    sendScore(true);
+    closeModal();
+    renderAll();
+    save();
+  }
+  function temper() {
+    if (countType("forge") < 1) { play("deny"); toast("Raise the forge annex first."); return; }
+    if (state.tempers >= 12) { play("deny"); return; }
+    if (state.starIron < 1) { play("deny"); toast("No star-iron in the vault."); return; }
+    state.starIron -= 1;
+    state.tempers += 1;
+    play("temper");
+    toast("The annex holds a keener edge. +" + (state.tempers * 4) + "% yields, kept when you found anew.");
+    hubEvent("star-iron-tempered", { tempers: state.tempers });
+    renderSheet();
+    paint();
+    save();
+  }
+  function offer() {
+    if (countType("shrine") < 1) { play("deny"); toast("Raise a shrine first."); return; }
+    if (state.lacquerOffered >= 8) { play("deny"); return; }
+    if (state.moonLacquer < 1) { play("deny"); toast("No moon-lacquer in the vault."); return; }
+    state.moonLacquer -= 1;
+    state.lacquerOffered += 1;
+    play("temper");
+    toast("The hokora drinks the lacquer. Ink flows thicker, even in the next settlement.");
+    hubEvent("moon-lacquer-offered", { offerings: state.lacquerOffered });
+    renderSheet();
+    paint();
+    save();
+  }
+
+  function normalizeResource(r) {
+    var s = String(r || "").toLowerCase().replace(/[\s_-]/g, "");
+    if (s === "stariron") return "star-iron";
+    if (s === "moonlacquer") return "moon-lacquer";
+    return null;
+  }
+  function clampAmount(n) {
+    if (n == null || n === "") return 1;
+    var x = Math.floor(Number(n));
+    if (!isFinite(x) || x < 1) return 0;
+    return Math.min(20, x);
+  }
+  function labelOf(res) { return res === "star-iron" ? "Star-iron" : "Moon-lacquer"; }
+  function applyVault(res, amount) {
+    var key = res === "star-iron" ? "starIron" : "moonLacquer";
+    var room = Math.max(0, 99 - state[key]);
+    var add = Math.min(room, amount);
+    state[key] += add;
+    return add;
+  }
+  function acceptGrant(input, silentDup) {
+    var res = normalizeResource(input && input.resource);
+    if (!res) return { ok: false, error: "unknown-resource" };
+    var amount = clampAmount(input.amount);
+    if (!amount) return { ok: false, error: "bad-amount" };
+    var id = input.id ? String(input.id).slice(0, 80) : "";
+    if (id && state.seenGrants.indexOf(id) >= 0) return { ok: true, applied: 0, duplicate: true };
+    var applied = applyVault(res, amount);
+    if (id) {
+      state.seenGrants.push(id);
+      if (state.seenGrants.length > 50) state.seenGrants.splice(0, state.seenGrants.length - 50);
+    }
+    var source = input.source ? String(input.source).slice(0, 40) : "another Rokumon game";
+    if (!silentDup) {
+      if (applied > 0) toast(labelOf(res) + " arrived from " + source + ".");
+      else toast("The vault could not hold more " + labelOf(res).toLowerCase() + ".");
+    }
+    if (applied > 0) document.getElementById("vault").open = true;
+    paint();
+    save();
+    return { ok: true, applied: applied, resource: res };
+  }
+  function pullGrants() {
+    var raw = null;
+    try { raw = localStorage.getItem(GRANT_KEY); } catch (e) { return; }
+    if (!raw) return;
+    var bag = null;
+    try { bag = JSON.parse(raw); } catch (e) { return; }
+    if (!bag || !Array.isArray(bag.pending)) return;
+    var keep = [];
+    var accepted = [];
+    bag.pending.forEach(function (item) {
+      if (!item || !normalizeResource(item.resource)) keep.push(item);
+      else accepted.push(item);
+    });
+    if (!accepted.length) return;
+    try {
+      bag.pending = keep;
+      localStorage.setItem(GRANT_KEY, JSON.stringify(bag));
+    } catch (e) { return; }
+    accepted.forEach(function (item) { acceptGrant(item, false); });
+  }
+
+  function hubCall(name, args) {
+    var h = window.Hub;
+    if (!h || typeof h[name] !== "function") return;
+    try { h[name].apply(h, args); } catch (e) { /* host bridge failed */ }
+  }
+  function hubEvent(name, props) { hubCall("event", [name, props]); }
+  function hubGameOver(score) { hubCall("gameOver", [Math.floor(score), 0]); }
+  function sendReady() {
+    if (readied) return;
+    if (!window.Hub || typeof window.Hub.ready !== "function") return;
+    readied = true;
+    hubCall("ready", []);
+  }
+  function sendScore(force) {
+    var n = Math.floor(state.lifetime);
+    if (!force && n === sentScore) return;
+    sentScore = n;
+    hubCall("score", [n]);
+  }
+
+  function unlockAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!ctx) {
+      ctx = new AC({ latencyHint: "interactive" });
+      master = ctx.createGain();
+      master.gain.value = 0.22;
+      master.connect(ctx.destination);
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function tone(freq, dur, type, gain, delay) {
+    if (!state.sound || !ctx || ctx.state !== "running") return;
+    var t = ctx.currentTime + (delay || 0);
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(master);
+    o.start(t);
+    o.stop(t + dur + 0.03);
+    o.onended = function () { try { o.disconnect(); g.disconnect(); } catch (e) {} };
+  }
+  function play(kind) {
+    if (!state.sound) return;
+    var audio = unlockAudio();
+    if (!audio) return;
+    var run = function () {
+      if (kind === "place") { tone(220, 0.09, "triangle", 0.35); tone(440, 0.14, "sine", 0.22, 0.05); }
+      else if (kind === "upgrade") { tone(330, 0.1, "triangle", 0.3); tone(494, 0.14, "sine", 0.22, 0.08); tone(659, 0.2, "sine", 0.16, 0.16); }
+      else if (kind === "deny") tone(110, 0.12, "square", 0.12);
+      else if (kind === "tier") { tone(392, 0.12, "sine", 0.28); tone(523, 0.22, "triangle", 0.2, 0.1); }
+      else if (kind === "temper") { tone(660, 0.08, "triangle", 0.2); tone(880, 0.18, "sine", 0.18, 0.06); }
+      else if (kind === "prestige") { tone(196, 0.28, "sine", 0.28); tone(294, 0.32, "sine", 0.2, 0.12); tone(392, 0.4, "triangle", 0.18, 0.24); }
+      else if (kind === "focus") tone(520, 0.08, "sine", 0.16);
+    };
+    if (audio.state === "running") run();
+    else audio.resume().then(run).catch(function () {});
+  }
+
+  document.addEventListener("pointerdown", function () { unlockAudio(); });
+  document.addEventListener("keydown", function (e) {
+    unlockAudio();
+    if (e.key === "Escape" && modalKind) {
+      var kind = modalKind;
+      closeModal();
+      if (kind === "guide") finishGuide();
+    } else if ((e.key === "?" || (e.key === "/" && e.shiftKey)) && !modalKind) openGuide();
+  });
+  document.body.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-action]");
+    if (!t || t.disabled) return;
+    var action = t.dataset.action;
+    if (action === "select") {
+      var i = Number(t.dataset.index);
+      if (!isOpen(i)) { play("deny"); toast("Mist holds this plot until " + opensAt(i) + "."); return; }
+      state.selected = i;
+      confirmClear = false;
+      renderBoard();
+      renderSheet();
+      paint();
+      return;
+    }
+    if (action === "place") place(t.dataset.type);
+    else if (action === "upgrade") upgrade();
+    else if (action === "focus") {
+      var bld = state.grid[state.selected];
+      var nextFocus = t.dataset.focus;
+      if (!bld || bld.type !== "hut") return;
+      if (nextFocus !== "wood" && nextFocus !== "stone" && nextFocus !== "food") return;
+      bld.focus = nextFocus;
+      play("focus");
+      renderSheet();
+      paint();
+      save();
+    } else if (action === "clear-ask") { confirmClear = true; renderSheet(); }
+    else if (action === "clear-no") { confirmClear = false; renderSheet(); }
+    else if (action === "clear-yes") clearPlot();
+    else if (action === "prestige-ask") openPrestige();
+    else if (action === "prestige-confirm") found();
+    else if (action === "temper") temper();
+    else if (action === "offer") offer();
+    else if (action === "sound-toggle") {
+      state.sound = !state.sound;
+      if (state.sound) { unlockAudio(); play("focus"); }
+      paint();
+      save();
+    } else if (action === "guide-open") openGuide();
+    else if (action === "guide-close") { closeModal(); finishGuide(); }
+    else if (action === "modal-close") {
+      var kind2 = modalKind;
+      closeModal();
+      if (kind2 === "guide") finishGuide();
+      else if (pendingAway && !modalKind) {
+        var away = pendingAway;
+        pendingAway = null;
+        openAway(away);
+      }
+    }
+  });
+  document.getElementById("modal").addEventListener("click", function (e) {
+    if (e.target.id !== "modal") return;
+    if (modalKind === "prestige") return;
+    var kind = modalKind;
+    closeModal();
+    if (kind === "guide") finishGuide();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { save(); return; }
+    var info = catchUp();
+    renderAll();
+    handleAway(info);
+    pullGrants();
+  });
+  window.addEventListener("pagehide", save);
+
+  function loop(now) {
+    if (!lastFrame) lastFrame = now;
+    var raw = (now - lastFrame) / 1000;
+    lastFrame = now;
+    if (raw > 1) {
+      var info = catchUp();
+      renderAll();
+      handleAway(info);
+    } else {
+      acc += Math.max(0, raw);
+      var stepped = false;
+      var guard = 0;
+      while (acc >= 0.1 && guard < 30) { tick(0.1); acc -= 0.1; stepped = true; guard++; }
+      if (stepped) {
+        syncTier(true);
+        paint();
+        state.lastTick = Date.now();
+      }
+    }
+    saveAcc += Math.min(raw, 2);
+    if (saveAcc >= 2) { save(); saveAcc = 0; }
+    scoreAcc += Math.min(Math.max(raw, 0), 2);
+    if (scoreAcc >= 2.5) { sendScore(false); scoreAcc = 0; }
+    grantAcc += Math.min(Math.max(raw, 0), 2);
+    if (grantAcc >= 4) { pullGrants(); grantAcc = 0; }
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener("message", function (e) {
+    var d = e.data;
+    if (!d || d.type !== "rokumon-grant") return;
+    acceptGrant(d, false);
+  });
+  window.addEventListener("rokumon-grant", function (e) { acceptGrant((e && e.detail) || {}, false); });
+
+  window.RokumonVillage = {
+    grant: function (input) { return acceptGrant(input || {}, false); },
+    getScore: function () { return Math.floor(state.lifetime); }
+  };
+
+  load();
+  var away = catchUp();
+  renderAll();
+  pullGrants();
+  if (!state.sawGuide) {
+    pendingAway = away;
+    openGuide();
+  } else if (away) openAway(away);
+  sendReady();
+  sendScore(true);
+  setTimeout(function () { sendReady(); sendScore(true); }, 600);
+  requestAnimationFrame(loop);
+})();
+</script>
+<noscript><p>Rokumon Village needs JavaScript.</p></noscript>
+</body>
+</html>
