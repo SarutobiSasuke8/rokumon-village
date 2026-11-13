@@ -15,8 +15,9 @@
     --washi-2: #e6d9c2;
     --cedar: #1a2420;
     --gold: #e0b15a;
-    --gold-2: #8a5e28;
+    --gold-2: #7a5222;
     --cinnabar: #b64032;
+    --cinnabar-dark: #8f2a1f;
     --moss: #2f6a45;
     --mist: #c9d2cb;
     --line: rgba(28, 25, 21, 0.14);
@@ -33,16 +34,27 @@
       radial-gradient(900px 420px at 50% -10%, rgba(224, 177, 90, 0.16), transparent 55%),
       radial-gradient(700px 380px at 100% 100%, rgba(62, 107, 74, 0.22), transparent 45%),
       linear-gradient(180deg, #24312b 0%, #1a2420 42%, #121a17 100%);
+    background-color: #1a2420;
     padding: 14px 12px calc(20px + env(safe-area-inset-bottom));
   }
   button, summary { font: inherit; color: inherit; }
   button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   button:disabled { cursor: not-allowed; }
-  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .sheet :focus-visible, .modal-card :focus-visible, .toast :focus-visible { outline-color: var(--ink); }
+  .sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+  }
   .wrap { max-width: 1040px; margin: 0 auto; }
   h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.02em; }
   h1 { margin: 0; font-size: 28px; line-height: 1.05; }
   h2 { margin: 0 0 6px; font-size: 22px; color: var(--ink); }
+  h2:focus { outline: none; }
+  h2:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   p { margin: 0; }
   .eyebrow {
     margin: 0;
@@ -69,6 +81,7 @@
     line-height: 0.95;
     color: var(--gold);
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
   }
   .top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn {
@@ -83,8 +96,10 @@
   .btn.primary.ready { box-shadow: 0 0 0 2px var(--gold); }
   .btn.ghost { background: transparent; border-color: rgba(244, 236, 220, 0.28); color: var(--washi); }
   .btn.ink { background: var(--ink); color: var(--washi); width: 100%; }
-  .btn.line { background: transparent; border-color: var(--line); color: var(--ink); }
-  .btn:disabled { opacity: 0.48; }
+  .btn.line { background: transparent; border-color: rgba(28, 25, 21, 0.4); color: var(--ink); }
+  /* Disabled buttons stay readable: the label explains what is missing. */
+  .btn:disabled { background: #3b3530; color: #d8cdb8; border-color: rgba(244, 236, 220, 0.18); box-shadow: none; }
+  .sheet .btn:disabled, .modal-card .btn:disabled { background: #e3d7c2; color: #4e463c; border-color: rgba(28, 25, 21, 0.25); }
   .scene { height: 78px; margin: 8px 0 10px; }
   .scene svg { width: 100%; height: 100%; display: block; }
   .resources {
@@ -100,11 +115,11 @@
     min-width: 0;
   }
   .res .label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin: 0; }
-  .qty { margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+  .qty { margin: 2px 0 0; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 2px; }
   .qty b { font-size: 16px; font-weight: 650; }
-  .cap { color: var(--mist); font-size: 11px; margin-left: 2px; }
+  .cap { color: var(--mist); font-size: 11px; }
   .rate { margin: 1px 0 0; font-size: 12px; color: var(--mist); font-variant-numeric: tabular-nums; }
-  .rate.full { color: #e7b2a8; }
+  .rate.full { color: #f0c2b9; }
   .bar { height: 4px; border-radius: 99px; background: rgba(244, 236, 220, 0.14); overflow: hidden; margin-top: 6px; }
   .bar > span { display: block; height: 100%; width: 0; background: var(--gold); }
   .res[data-k="wood"] .bar > span { background: #c48a5a; }
@@ -141,6 +156,7 @@
   .plot {
     aspect-ratio: 1;
     min-height: 44px;
+    min-width: 0;
     border-radius: 12px;
     border: 1px solid rgba(244, 236, 220, 0.12);
     background: #2c261e;
@@ -153,10 +169,10 @@
     gap: 1px;
     position: relative;
   }
-  .plot svg { width: 30px; height: 30px; }
-  .plot .nm { font-size: 9px; line-height: 1.1; text-align: center; max-width: 100%; }
+  .plot svg { width: 30px; height: 30px; flex: none; }
+  .plot .nm { font-size: 10px; line-height: 1.1; text-align: center; max-width: 100%; overflow-wrap: anywhere; }
   .plot.selected { box-shadow: inset 0 0 0 2px var(--gold); }
-  .plot.locked { background: #222a26; color: #b7c2bb; }
+  .plot.locked { background: #222a26; color: #c3cdc6; }
   .plot.open { background: #3a3126; }
   .plot.boosted::after {
     content: "";
@@ -191,26 +207,30 @@
     margin-top: 8px;
     color: var(--ink);
   }
-  .build:disabled { opacity: 0.55; }
+  /* Unaffordable or locked: keep the costs legible, show the state with the surface instead of fading text. */
+  .build:disabled { background: #ece2cf; border-style: dashed; border-color: rgba(28, 25, 21, 0.3); }
+  .build:disabled svg { opacity: 0.6; }
+  .build[aria-disabled="true"] { background: #ece2cf; border-style: dashed; border-color: rgba(28, 25, 21, 0.3); }
+  .sheet .btn[aria-disabled="true"] { background: #e3d7c2; color: #4e463c; border-color: rgba(28, 25, 21, 0.25); }
   .build b { display: block; font-size: 15px; }
   .build small { display: block; color: var(--ink-soft); font-size: 12px; line-height: 1.35; margin-top: 2px; }
   .costs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .cost {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.02em;
-    background: rgba(28, 25, 21, 0.06);
+    background: rgba(28, 25, 21, 0.07);
     border-radius: 99px;
     padding: 2px 6px;
   }
-  .cost.short { background: rgba(182, 64, 50, 0.14); color: var(--cinnabar); }
-  .need { font-size: 12px; margin-top: 4px; color: var(--cinnabar); }
+  .cost.short { background: rgba(182, 64, 50, 0.12); color: var(--cinnabar-dark); }
+  .need { font-size: 12px; margin-top: 4px; color: var(--cinnabar-dark); }
   .need.ok { color: var(--moss); }
   .foci { display: flex; gap: 6px; margin: 8px 0; }
   .foci button {
     flex: 1;
     min-height: 44px;
     border-radius: 10px;
-    border: 1px solid var(--line);
+    border: 1px solid rgba(28, 25, 21, 0.35);
     background: transparent;
     color: var(--ink);
   }
@@ -278,7 +298,7 @@
   .toast {
     background: var(--washi);
     color: var(--ink);
-    border-left: 3px solid var(--gold);
+    border-left: 3px solid var(--gold-2);
     border-radius: 10px;
     padding: 10px 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
@@ -304,6 +324,10 @@
     .stage { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
     .sheet { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; }
   }
+  @media (max-width: 360px) {
+    .plot svg { width: 24px; height: 24px; }
+    .plot .nm { font-size: 9px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
@@ -325,16 +349,17 @@
       </div>
     </div>
     <div class="score">
-      <p class="eyebrow">Clan prosperity</p>
+      <p class="eyebrow" id="life-label">Clan prosperity</p>
       <p class="score-num" id="life">0</p>
       <p class="sub" id="rate-p">+0.32/s</p>
     </div>
     <div class="top-actions">
       <button type="button" class="btn ghost" id="sound-btn" data-action="sound-toggle" aria-pressed="true">Sound on</button>
-      <button type="button" class="btn ghost" data-action="guide-open">How to play</button>
+      <button type="button" class="btn ghost" data-action="guide-open" aria-keyshortcuts="Shift+?">How to play</button>
     </div>
   </header>
 
+  <main id="main">
   <div class="scene" aria-hidden="true">
     <svg viewBox="0 0 800 140" preserveAspectRatio="xMidYMax slice">
       <path d="M0 96 L130 48 L220 82 L340 34 L450 78 L560 30 L680 72 L800 46 V140 H0 Z" fill="#31443b"/>
@@ -377,7 +402,7 @@
     </article>
   </section>
 
-  <section class="status">
+  <section class="status" aria-label="This settlement">
     <div class="status-copy">
       <p class="eyebrow">This settlement</p>
       <p><strong id="tier-name">Camp</strong> <span id="tier-detail"></span></p>
@@ -388,7 +413,7 @@
   </section>
 
   <div class="stage">
-    <div>
+    <section aria-label="The slope">
       <div class="camp">
         <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
           <path d="M6 28 H30 L26 16 H10 Z" fill="#3a3126" stroke="#f4ecdc" stroke-width="1.2"/>
@@ -396,9 +421,10 @@
         </svg>
         <p><strong>Clan camp.</strong> The fire gathers a little of everything, even before the first hut.</p>
       </div>
-      <div class="board" id="board" role="group" aria-label="Village terraces"></div>
-    </div>
-    <aside class="sheet" id="sheet"></aside>
+      <p class="sr-only" id="board-help">Twenty plots in four terraces of five. Use the arrow keys to move between plots, and Enter or Space to choose one. The chosen plot's options follow the terraces.</p>
+      <div class="board" id="board" role="group" aria-label="Village terraces" aria-describedby="board-help"></div>
+    </section>
+    <aside class="sheet" id="sheet" aria-labelledby="sheet-title"></aside>
   </div>
 
   <details class="vault" id="vault">
@@ -420,20 +446,35 @@
     </div>
   </details>
   <p class="foot">Clan prosperity is the score. It stays when a settlement is founded.</p>
+  </main>
 </div>
 <div id="modal" hidden></div>
-<div id="toasts" aria-live="polite"></div>
-<script>
-(function () {
+<div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+<script id="village-rules">
+/*
+ * Rokumon Village rules. Deterministic: no DOM, no clock, no Math.random.
+ * Every function takes a state (and the time or random source it needs) and
+ * returns a new state; the input is never changed. The UI script below and
+ * the dev-only tests in test/ both use this block.
+ */
+(function (root) {
   "use strict";
 
-  var SAVE_KEY = "rokumon-village-v1";
-  var GRANT_KEY = "rokumon-shared-goods";
-  var EIGHT_H = 8 * 3600 * 1000;
+  var SAVE_VERSION = 2;
+  var OFFLINE_CAP_MS = 8 * 3600 * 1000;
+  var OFFLINE_STEP_S = 1;
+  var AWAY_NOTICE_MS = 15000;
+  var CLOCK_SLACK_MS = 2000;
+  var MIN_EPOCH = 1577836800000; // 2020-01-01, older timestamps are treated as missing
+  var MAX_FUTURE_MS = 10 * 365 * 24 * 3600 * 1000;
+  var MAX_NUM = 1e15;
   var PRESTIGE_AT = 160;
   var RES = ["wood", "stone", "food", "ink"];
+  var GATHER = ["wood", "stone", "food"];
   var COLS = 5;
-  var PLOT_COUNT = 20;
+  var ROWS = 4;
+  var PLOT_COUNT = COLS * ROWS;
+  var START_PLOT = 17;
   var ROW_NAME = ["Summit", "High path", "Mid slope", "Camp terrace"];
   var PLOT_ORDER = [17, 16, 18, 15, 19, 12, 11, 13, 10, 14, 7, 6, 8, 5, 9, 2, 1, 3, 0, 4];
   var NAMES = ["Cedar Fold", "Lantern Spur", "Ink Terrace", "Mist Gate", "Pine Hearth", "Stone Quiet", "Moon Path", "Heron Stair", "Ash Garden", "Bell Hollow", "Paper Slope", "Night Root"];
@@ -445,6 +486,13 @@
     { name: "Seat", need: 2200, plots: 20 }
   ];
   var CAMP = { wood: 0.45, stone: 0.28, food: 0.32, ink: 0.045, prosperity: 0.32 };
+  var BASE_CAPS = { wood: 70, stone: 50, food: 55, ink: 20 };
+  var VAULT_MAX = 99;
+  var TEMPER_MAX = 12;
+  var OFFER_MAX = 8;
+  var GRANT_MAX = 20;
+  var SEEN_MAX = 200;
+  var PLACE_GRANT = 14;
   var BUILDINGS = {
     hut: {
       name: "Gatherer Hut",
@@ -534,38 +582,553 @@
     }
   };
   var ORDER = ["hut", "store", "training", "tower", "shrine", "forge"];
-  var SHORT = { hut: "Hut", store: "Store", training: "Dojo", tower: "Tower", shrine: "Shrine", forge: "Forge" };
-  var FOCUS_LABEL = { wood: "Timber", stone: "Quarry", food: "Paddy" };
 
-  function freshState() {
+  function has(o, k) { return o != null && Object.prototype.hasOwnProperty.call(o, k); }
+  function isType(t) { return typeof t === "string" && has(BUILDINGS, t); }
+  function isPlot(i) { return typeof i === "number" && i >= 0 && i < PLOT_COUNT && Math.floor(i) === i; }
+  function finite(v, d, min, max) {
+    var n = typeof v === "number" ? v : (typeof v === "string" && v.trim() !== "" ? Number(v) : NaN);
+    if (!isFinite(n)) return d;
+    return Math.min(max, Math.max(min, n));
+  }
+  function int(v, d, min, max) { return Math.floor(finite(v, d, min, max)); }
+  function clone(s) { return JSON.parse(JSON.stringify(s)); }
+  function upgradeGrant(level) { return 8 + 6 * level; }
+
+  function emptyRaised() {
+    var r = {};
+    ORDER.forEach(function (t) {
+      r[t] = [];
+      for (var l = 0; l < BUILDINGS[t].maxLevel; l++) r[t].push(0);
+    });
+    return r;
+  }
+  function startRes(seals) {
+    return { wood: 18 + seals * 10, stone: 8 + seals * 6, food: 12 + seals * 6, ink: 2 + Math.min(8, seals) };
+  }
+  function freshState(now) {
+    var grid = [];
+    for (var i = 0; i < PLOT_COUNT; i++) grid.push(null);
     return {
-      version: 1,
-      name: "Cedar Fold",
+      version: SAVE_VERSION,
+      name: NAMES[0],
       settlement: 1,
-      res: { wood: 18, stone: 8, food: 12, ink: 2 },
+      res: startRes(0),
       starIron: 0,
       moonLacquer: 0,
       tempers: 0,
       lacquerOffered: 0,
-      grid: new Array(PLOT_COUNT).fill(null),
+      grid: grid,
+      raised: emptyRaised(),
       run: 0,
       lifetime: 0,
       seals: 0,
       bestRun: 0,
       highestTier: 0,
       knownTier: 0,
-      lastTick: Date.now(),
+      lastTick: finite(now, 0, 0, Number.MAX_SAFE_INTEGER),
       sawGuide: false,
       sound: true,
-      selected: 17,
+      selected: START_PLOT,
       seenGrants: []
     };
   }
 
-  var state = freshState();
+  function tierIndex(run) {
+    var i = 0;
+    for (var t = 0; t < TIERS.length; t++) if (run >= TIERS[t].need) i = t;
+    return i;
+  }
+  function currentTier(s) { return tierIndex(s.run); }
+  function plotOpenAt(tier, i) {
+    var order = PLOT_ORDER.indexOf(i);
+    return order > -1 && order < TIERS[tier].plots;
+  }
+  function plotOpen(s, i) { return plotOpenAt(currentTier(s), i); }
+  function plotOpensAtTier(i) {
+    var order = PLOT_ORDER.indexOf(i);
+    for (var t = 0; t < TIERS.length; t++) if (order > -1 && order < TIERS[t].plots) return t;
+    return TIERS.length - 1;
+  }
+  function neighbors(i) {
+    var r = Math.floor(i / COLS);
+    var c = i % COLS;
+    var out = [];
+    if (r > 0) out.push(i - COLS);
+    if (r < ROWS - 1) out.push(i + COLS);
+    if (c > 0) out.push(i - 1);
+    if (c < COLS - 1) out.push(i + 1);
+    return out;
+  }
+  function countType(s, type) {
+    var n = 0;
+    for (var i = 0; i < PLOT_COUNT; i++) if (s.grid[i] && s.grid[i].type === type) n++;
+    return n;
+  }
+  function nothingBuilt(s) {
+    for (var i = 0; i < PLOT_COUNT; i++) if (s.grid[i]) return false;
+    return true;
+  }
+  function auraAt(s, i) {
+    var a = 0;
+    var list = neighbors(i);
+    for (var n = 0; n < list.length; n++) {
+      var b = s.grid[list[n]];
+      if (b && b.type === "tower") a += BUILDINGS.tower.aura[b.level - 1];
+    }
+    return Math.min(1, a);
+  }
+  function shrineLevels(s) {
+    var n = 0;
+    for (var i = 0; i < PLOT_COUNT; i++) if (s.grid[i] && s.grid[i].type === "shrine") n += s.grid[i].level;
+    return n;
+  }
+  function multipliers(s) {
+    var g = (1 + s.seals * 0.15) * (1 + s.tempers * 0.04);
+    return {
+      global: g,
+      ink: g * (1 + s.lacquerOffered * 0.12),
+      prosperity: g * (1 + 0.025 * shrineLevels(s))
+    };
+  }
+  function caps(s) {
+    var c = { wood: BASE_CAPS.wood, stone: BASE_CAPS.stone, food: BASE_CAPS.food, ink: BASE_CAPS.ink };
+    for (var i = 0; i < PLOT_COUNT; i++) {
+      var b = s.grid[i];
+      if (!b || b.type !== "store") continue;
+      var add = BUILDINGS.store.cap[b.level - 1];
+      RES.forEach(function (k) { c[k] += add[k]; });
+    }
+    var m = 1 + s.seals * 0.08;
+    RES.forEach(function (k) { c[k] = Math.floor(c[k] * m); });
+    return c;
+  }
+  function foodFactorWith(food, cap) {
+    if (cap <= 0) return 1;
+    var ratio = food / cap;
+    if (ratio >= 0.5) return 1;
+    return 0.45 + 0.55 * (Math.max(0, ratio) / 0.5);
+  }
+  function foodFactor(s) { return foodFactorWith(s.res.food, caps(s).food); }
+
+  function yieldWith(ctx, s, index, type, level, focus) {
+    var out = { wood: 0, stone: 0, food: 0, ink: 0, prosperity: 0 };
+    if (!isType(type)) return out;
+    var def = BUILDINGS[type];
+    var L = Math.max(0, Math.min(def.maxLevel, level) - 1);
+    var m = ctx.m;
+    if (type === "hut") {
+      var aura = 1 + auraAt(s, index);
+      var f = GATHER.indexOf(focus) >= 0 ? focus : "wood";
+      GATHER.forEach(function (k) { out[k] = (k === f ? def.focusRate[L] : def.sideRate[L]) * m.global * aura; });
+    } else if (type === "training") out.prosperity = def.prosperity[L] * m.prosperity * ctx.food;
+    else if (type === "tower" || type === "forge") out.prosperity = def.prosperity[L] * m.prosperity;
+    else if (type === "shrine") {
+      out.ink = def.ink[L] * m.ink * (1 + auraAt(s, index));
+      out.prosperity = def.prosperity[L] * m.prosperity;
+    }
+    return out;
+  }
+  function context(s, c) {
+    var cp = c || caps(s);
+    return { m: multipliers(s), food: foodFactorWith(s.res.food, cp.food), caps: cp };
+  }
+  /* Per-second output of one building at a level (used for "Now" and "Next" lines). */
+  function buildingYield(s, index, type, level, focus) {
+    return yieldWith(context(s), s, index, type, level, focus);
+  }
+  function rates(s, ctxIn) {
+    var ctx = ctxIn || context(s);
+    var m = ctx.m;
+    var out = {
+      wood: CAMP.wood * m.global,
+      stone: CAMP.stone * m.global,
+      food: CAMP.food * m.global,
+      ink: CAMP.ink * m.ink,
+      prosperity: CAMP.prosperity * m.prosperity
+    };
+    for (var i = 0; i < PLOT_COUNT; i++) {
+      var b = s.grid[i];
+      if (!b) continue;
+      var y = yieldWith(ctx, s, i, b.type, b.level, b.focus);
+      out.wood += y.wood; out.stone += y.stone; out.food += y.food; out.ink += y.ink; out.prosperity += y.prosperity;
+    }
+    return out;
+  }
+
+  /* Advance a copy of the state by `seconds` of elapsed time, in steps of `step` seconds. */
+  function advance(s, seconds, step) {
+    var n = clone(s);
+    var total = finite(seconds, 0, 0, OFFLINE_CAP_MS / 1000);
+    if (total <= 0) return n;
+    var dtMax = finite(step, OFFLINE_STEP_S, 0.05, 60);
+    var c = caps(n);
+    var left = total;
+    while (left > 1e-9) {
+      var dt = Math.min(dtMax, left);
+      var r = rates(n, context(n, c));
+      for (var k = 0; k < RES.length; k++) {
+        var key = RES[k];
+        if (n.res[key] < c[key]) n.res[key] = Math.min(c[key], n.res[key] + r[key] * dt);
+      }
+      var gain = r.prosperity * dt;
+      n.run = Math.min(MAX_NUM, n.run + gain);
+      n.lifetime = Math.min(MAX_NUM, n.lifetime + gain);
+      if (n.run > n.bestRun) n.bestRun = n.run;
+      left -= dt;
+    }
+    return n;
+  }
+
+  function canAfford(s, cost) {
+    for (var i = 0; i < RES.length; i++) {
+      var k = RES[i];
+      if ((cost[k] || 0) > s.res[k] + 0.001) return false;
+    }
+    return true;
+  }
+  function shortfall(s, cost) {
+    var out = {};
+    RES.forEach(function (k) {
+      var c = cost[k] || 0;
+      if (c > s.res[k] + 0.001) out[k] = Math.ceil(c - s.res[k]);
+    });
+    return out;
+  }
+  function payInto(n, cost) {
+    RES.forEach(function (k) { n.res[k] = Math.max(0, n.res[k] - (cost[k] || 0)); });
+  }
+  function grantInto(n, amount) {
+    n.run = Math.min(MAX_NUM, n.run + amount);
+    n.lifetime = Math.min(MAX_NUM, n.lifetime + amount);
+    if (n.run > n.bestRun) n.bestRun = n.run;
+  }
+  /*
+   * A building's raising grant is paid the first time each slot of that type
+   * reaches a level in this settlement. Clearing and raising again does not
+   * pay twice, so the grant cannot be farmed.
+   */
+  function claimGrant(n, type, level, amount) {
+    var row = n.raised[type];
+    if (row[level - 1] >= BUILDINGS[type].max) return 0;
+    row[level - 1] += 1;
+    grantInto(n, amount);
+    return amount;
+  }
+
+  function placeCheck(s, index, type) {
+    if (!isType(type)) return "unknown-type";
+    if (!isPlot(index)) return "bad-plot";
+    if (!plotOpen(s, index)) return "locked";
+    if (s.grid[index]) return "occupied";
+    var def = BUILDINGS[type];
+    if (currentTier(s) < def.tier) return "tier";
+    if (countType(s, type) >= def.max) return "max";
+    if (!canAfford(s, def.costs[0])) return "cost";
+    return null;
+  }
+  function place(s, index, type) {
+    var reason = placeCheck(s, index, type);
+    if (reason) return { ok: false, reason: reason, state: s };
+    var n = clone(s);
+    payInto(n, BUILDINGS[type].costs[0]);
+    n.grid[index] = { type: type, level: 1, focus: "wood" };
+    var granted = claimGrant(n, type, 1, PLACE_GRANT);
+    return { ok: true, state: n, granted: granted };
+  }
+  function upgradeCheck(s, index) {
+    if (!isPlot(index)) return "bad-plot";
+    var b = s.grid[index];
+    if (!b) return "empty";
+    var def = BUILDINGS[b.type];
+    if (b.level >= def.maxLevel) return "maxed";
+    if (!canAfford(s, def.costs[b.level])) return "cost";
+    return null;
+  }
+  function upgrade(s, index) {
+    var reason = upgradeCheck(s, index);
+    if (reason) return { ok: false, reason: reason, state: s };
+    var n = clone(s);
+    var b = n.grid[index];
+    payInto(n, BUILDINGS[b.type].costs[b.level]);
+    b.level += 1;
+    var granted = claimGrant(n, b.type, b.level, upgradeGrant(b.level));
+    return { ok: true, state: n, level: b.level, granted: granted };
+  }
+  /* Clearing returns half the first cost, limited by what the stores can hold after the plot is gone. */
+  function clearPlot(s, index) {
+    if (!isPlot(index) || !s.grid[index]) return { ok: false, reason: "empty", state: s };
+    var n = clone(s);
+    var base = BUILDINGS[n.grid[index].type].costs[0];
+    n.grid[index] = null;
+    var c = caps(n);
+    var lost = false;
+    RES.forEach(function (k) {
+      var add = Math.floor((base[k] || 0) * 0.5);
+      var total = n.res[k] + add;
+      if (total > c[k] + 0.001) lost = true;
+      n.res[k] = Math.min(c[k], total);
+    });
+    return { ok: true, state: n, lost: lost };
+  }
+  function setFocus(s, index, focus) {
+    if (!isPlot(index)) return { ok: false, reason: "bad-plot", state: s };
+    var b = s.grid[index];
+    if (!b || b.type !== "hut") return { ok: false, reason: "not-hut", state: s };
+    if (GATHER.indexOf(focus) < 0) return { ok: false, reason: "bad-focus", state: s };
+    var n = clone(s);
+    n.grid[index].focus = focus;
+    return { ok: true, state: n };
+  }
+
+  function canFound(s) { return s.run >= PRESTIGE_AT; }
+  function nextName(current, rng) {
+    var pool = NAMES.filter(function (x) { return x !== current; });
+    var r = typeof rng === "function" ? Number(rng()) : 0;
+    var i = Math.floor((isFinite(r) ? r : 0) * pool.length);
+    return pool[Math.max(0, Math.min(pool.length - 1, i))];
+  }
+  function found(s, rng) {
+    if (!canFound(s)) return { ok: false, reason: "not-ready", state: s };
+    var n = clone(s);
+    var runProsperity = n.run;
+    var tier = currentTier(n);
+    n.seals = Math.min(999, n.seals + 1);
+    n.settlement = n.seals + 1;
+    n.name = nextName(n.name, rng);
+    n.run = 0;
+    n.knownTier = 0;
+    n.grid = freshState(0).grid;
+    n.raised = emptyRaised();
+    n.selected = START_PLOT;
+    var sr = startRes(n.seals);
+    var c = caps(n);
+    RES.forEach(function (k) { n.res[k] = Math.min(c[k], sr[k]); });
+    return { ok: true, state: n, runProsperity: runProsperity, tier: tier };
+  }
+  function temper(s) {
+    if (countType(s, "forge") < 1) return { ok: false, reason: "no-forge", state: s };
+    if (s.tempers >= TEMPER_MAX) return { ok: false, reason: "maxed", state: s };
+    if (s.starIron < 1) return { ok: false, reason: "empty", state: s };
+    var n = clone(s);
+    n.starIron -= 1;
+    n.tempers += 1;
+    return { ok: true, state: n };
+  }
+  function offer(s) {
+    if (countType(s, "shrine") < 1) return { ok: false, reason: "no-shrine", state: s };
+    if (s.lacquerOffered >= OFFER_MAX) return { ok: false, reason: "maxed", state: s };
+    if (s.moonLacquer < 1) return { ok: false, reason: "empty", state: s };
+    var n = clone(s);
+    n.moonLacquer -= 1;
+    n.lacquerOffered += 1;
+    return { ok: true, state: n };
+  }
+
+  function normalizeResource(r) {
+    var x = String(r == null ? "" : r).toLowerCase().replace(/[\s_-]/g, "");
+    if (x === "stariron") return "star-iron";
+    if (x === "moonlacquer") return "moon-lacquer";
+    return null;
+  }
+  function clampAmount(v) {
+    if (v == null || v === "") return 1;
+    var x = Math.floor(Number(v));
+    if (!isFinite(x) || x < 1) return 0;
+    return Math.min(GRANT_MAX, x);
+  }
+  function applyGrant(s, input) {
+    var res = normalizeResource(input && input.resource);
+    if (!res) return { ok: false, error: "unknown-resource", state: s };
+    var amount = clampAmount(input.amount);
+    if (!amount) return { ok: false, error: "bad-amount", state: s };
+    var id = input.id != null && input.id !== "" ? String(input.id).slice(0, 80) : "";
+    if (id && s.seenGrants.indexOf(id) >= 0) return { ok: true, applied: 0, duplicate: true, resource: res, state: s };
+    var n = clone(s);
+    var key = res === "star-iron" ? "starIron" : "moonLacquer";
+    var applied = Math.min(Math.max(0, VAULT_MAX - n[key]), amount);
+    n[key] += applied;
+    if (id) {
+      n.seenGrants.push(id);
+      if (n.seenGrants.length > SEEN_MAX) n.seenGrants.splice(0, n.seenGrants.length - SEEN_MAX);
+    }
+    var source = input.source != null && input.source !== "" ? String(input.source).slice(0, 40) : "";
+    return { ok: true, applied: applied, duplicate: false, resource: res, source: source, state: n };
+  }
+
+  /* Record tiers newly reached on this settlement. Returns their indices in order. */
+  function syncTier(s) {
+    var i = currentTier(s);
+    if (i <= s.knownTier && i <= s.highestTier) return { state: s, reached: [] };
+    var n = clone(s);
+    var reached = [];
+    for (var t = n.knownTier + 1; t <= i; t++) reached.push(t);
+    n.knownTier = Math.max(n.knownTier, i);
+    n.highestTier = Math.max(n.highestTier, i);
+    return { state: n, reached: reached };
+  }
+
+  /*
+   * Offline progress from the saved timestamp to `now`.
+   * - Capped at eight hours.
+   * - If the clock reads earlier than the last save (it was moved back), nothing
+   *   is granted and the saved timestamp is kept, so moving the clock forward
+   *   again only pays once real time has passed it.
+   */
+  function offline(s, now) {
+    var n = clone(s);
+    var result = { state: n, elapsedMs: 0, simulatedMs: 0, limited: false, clockBack: false, reset: false };
+    if (!isFinite(now)) return result;
+    if (!(n.lastTick >= MIN_EPOCH) || n.lastTick > now + MAX_FUTURE_MS) {
+      n.lastTick = now;
+      result.reset = true;
+      return result;
+    }
+    var elapsed = now - n.lastTick;
+    result.elapsedMs = elapsed;
+    if (elapsed <= 0) {
+      result.clockBack = elapsed < -CLOCK_SLACK_MS;
+      return result;
+    }
+    var sim = Math.min(elapsed, OFFLINE_CAP_MS);
+    var adv = advance(n, sim / 1000, OFFLINE_STEP_S);
+    adv.lastTick = now;
+    result.state = adv;
+    result.simulatedMs = sim;
+    result.limited = elapsed > OFFLINE_CAP_MS;
+    return result;
+  }
+  /* Move the saved timestamp forward to `now`, never backward. */
+  function touch(s, now) {
+    if (!isFinite(now) || now <= s.lastTick) return s;
+    var n = clone(s);
+    n.lastTick = now;
+    return n;
+  }
+
+  function fail(reason) { return { ok: false, reason: reason, state: null }; }
+  /*
+   * Validate parsed save data. Accepts save versions 1 and 2. Every number is
+   * clamped to a finite range the game can produce; buildings on locked plots,
+   * above their limits, or of unknown types are dropped.
+   */
+  function validate(data, now) {
+    if (!data || typeof data !== "object" || Array.isArray(data)) return fail("not-object");
+    if (data.version !== 1 && data.version !== SAVE_VERSION) return fail("unknown-version");
+    var s = freshState(now);
+    s.name = NAMES.indexOf(data.name) >= 0 ? data.name : NAMES[0];
+    s.seals = int(data.seals, 0, 0, 999);
+    s.settlement = int(data.settlement, s.seals + 1, 1, 1000);
+    s.starIron = int(data.starIron, 0, 0, VAULT_MAX);
+    s.moonLacquer = int(data.moonLacquer, 0, 0, VAULT_MAX);
+    s.tempers = int(data.tempers, 0, 0, TEMPER_MAX);
+    s.lacquerOffered = int(data.lacquerOffered, 0, 0, OFFER_MAX);
+    s.run = finite(data.run, 0, 0, MAX_NUM);
+    s.lifetime = Math.max(s.run, finite(data.lifetime, 0, 0, MAX_NUM));
+    s.bestRun = Math.max(s.run, finite(data.bestRun, 0, 0, MAX_NUM));
+    var tier = currentTier(s);
+    var grid = Array.isArray(data.grid) ? data.grid : [];
+    var counts = {};
+    for (var i = 0; i < PLOT_COUNT; i++) {
+      var b = grid[i];
+      if (!b || typeof b !== "object" || !isType(b.type)) continue;
+      var def = BUILDINGS[b.type];
+      if (!plotOpenAt(tier, i) || tier < def.tier) continue;
+      if ((counts[b.type] || 0) >= def.max) continue;
+      counts[b.type] = (counts[b.type] || 0) + 1;
+      s.grid[i] = {
+        type: b.type,
+        level: int(b.level, 1, 1, def.maxLevel),
+        focus: GATHER.indexOf(b.focus) >= 0 ? b.focus : "wood"
+      };
+    }
+    // Raising grants already claimed. A version 1 save has none, so they are
+    // rebuilt from what stands; never fewer than what stands.
+    var raisedIn = data.version === SAVE_VERSION && data.raised && typeof data.raised === "object" ? data.raised : {};
+    ORDER.forEach(function (t) {
+      var def = BUILDINGS[t];
+      var row = Array.isArray(raisedIn[t]) ? raisedIn[t] : [];
+      for (var l = 0; l < def.maxLevel; l++) {
+        var standing = 0;
+        for (var j = 0; j < PLOT_COUNT; j++) if (s.grid[j] && s.grid[j].type === t && s.grid[j].level >= l + 1) standing++;
+        s.raised[t][l] = Math.max(standing, int(row[l], 0, 0, def.max));
+      }
+    });
+    var c = caps(s);
+    var res = data.res && typeof data.res === "object" ? data.res : {};
+    RES.forEach(function (k) { s.res[k] = finite(res[k], s.res[k], 0, c[k]); });
+    s.highestTier = Math.max(tier, int(data.highestTier, 0, 0, TIERS.length - 1));
+    s.knownTier = Math.min(tier, int(data.knownTier, tier, 0, TIERS.length - 1));
+    var lt = finite(data.lastTick, NaN, 0, Number.MAX_SAFE_INTEGER);
+    s.lastTick = isFinite(lt) && lt >= MIN_EPOCH && (!isFinite(now) || lt <= now + MAX_FUTURE_MS) ? lt : (isFinite(now) ? now : 0);
+    s.sawGuide = data.sawGuide === true;
+    s.sound = data.sound !== false;
+    s.selected = int(data.selected, START_PLOT, 0, PLOT_COUNT - 1);
+    s.seenGrants = Array.isArray(data.seenGrants)
+      ? data.seenGrants.filter(function (x) { return typeof x === "string" || typeof x === "number"; }).slice(-SEEN_MAX).map(function (x) { return String(x).slice(0, 80); })
+      : [];
+    return { ok: true, state: s, migrated: data.version !== SAVE_VERSION };
+  }
+  function parse(raw, now) {
+    if (typeof raw !== "string" || raw.length > 200000) return fail("not-string");
+    var data;
+    try { data = JSON.parse(raw); } catch (e) { return fail("not-json"); }
+    return validate(data, now);
+  }
+  function serialize(s) {
+    var out = clone(s);
+    out.version = SAVE_VERSION;
+    return JSON.stringify(out);
+  }
+
+  root.RokumonVillageRules = Object.freeze({
+    SAVE_VERSION: SAVE_VERSION,
+    OFFLINE_CAP_MS: OFFLINE_CAP_MS,
+    OFFLINE_STEP_S: OFFLINE_STEP_S,
+    AWAY_NOTICE_MS: AWAY_NOTICE_MS,
+    PRESTIGE_AT: PRESTIGE_AT,
+    PLACE_GRANT: PLACE_GRANT,
+    RES: RES, GATHER: GATHER, COLS: COLS, ROWS: ROWS, PLOT_COUNT: PLOT_COUNT, START_PLOT: START_PLOT,
+    ROW_NAME: ROW_NAME, PLOT_ORDER: PLOT_ORDER, NAMES: NAMES, TIERS: TIERS, CAMP: CAMP,
+    BASE_CAPS: BASE_CAPS, BUILDINGS: BUILDINGS, ORDER: ORDER,
+    VAULT_MAX: VAULT_MAX, TEMPER_MAX: TEMPER_MAX, OFFER_MAX: OFFER_MAX, GRANT_MAX: GRANT_MAX, SEEN_MAX: SEEN_MAX,
+    isType: isType, upgradeGrant: upgradeGrant, startRes: startRes, freshState: freshState, clone: clone,
+    tierIndex: tierIndex, currentTier: currentTier, plotOpen: plotOpen, plotOpensAtTier: plotOpensAtTier,
+    neighbors: neighbors, countType: countType, nothingBuilt: nothingBuilt, auraAt: auraAt,
+    multipliers: multipliers, caps: caps, foodFactor: foodFactor, buildingYield: buildingYield, rates: rates,
+    advance: advance, canAfford: canAfford, shortfall: shortfall,
+    placeCheck: placeCheck, place: place, upgradeCheck: upgradeCheck, upgrade: upgrade,
+    clearPlot: clearPlot, setFocus: setFocus, canFound: canFound, nextName: nextName, found: found,
+    temper: temper, offer: offer, normalizeResource: normalizeResource, clampAmount: clampAmount,
+    applyGrant: applyGrant, syncTier: syncTier, offline: offline, touch: touch,
+    validate: validate, parse: parse, serialize: serialize
+  });
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script id="village-ui">
+(function () {
+  "use strict";
+
+  var R = window.RokumonVillageRules;
+  var SAVE_KEY = "rokumon-village-v1";
+  var BAK_KEY = SAVE_KEY + "-bak";
+  var UNREADABLE_KEY = SAVE_KEY + "-unreadable";
+  var GRANT_KEY = "rokumon-shared-goods";
+  var RES = R.RES;
+  var COLS = R.COLS;
+  var TIERS = R.TIERS;
+  var BUILDINGS = R.BUILDINGS;
+  var SHORT = { hut: "Hut", store: "Store", training: "Dojo", tower: "Tower", shrine: "Shrine", forge: "Forge" };
+  var FOCUS_LABEL = { wood: "Timber", stone: "Quarry", food: "Paddy" };
+  var MAX_TOASTS = 3;
+
+  var state = R.freshState(Date.now());
+  var loadNote = "";
   var confirmClear = false;
   var flash = -1;
+  var focusPlot = R.START_PLOT;
   var modalKind = "";
+  var modalReturn = null;
   var pendingAway = null;
   var sentScore = -1;
   var readied = false;
@@ -577,78 +1140,42 @@
   var grantAcc = 0;
   var lastFrame = 0;
 
-  function num(v, d, min, max) {
-    var n = Number(v);
-    if (!isFinite(n)) return d;
-    return Math.min(max, Math.max(min, n));
-  }
-
-  function clampLevel(type, level) {
-    var def = BUILDINGS[type];
-    if (!def) return 1;
-    return Math.max(1, Math.min(def.maxLevel, Math.floor(level) || 1));
-  }
-
+  /* ---------- save ---------- */
   function load() {
-    var raw = null;
-    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return; }
-    if (!raw) return;
-    var data = null;
-    try { data = JSON.parse(raw); }
-    catch (e) {
-      try { data = JSON.parse(localStorage.getItem(SAVE_KEY + "-bak") || "null"); }
-      catch (e2) { return; }
-    }
-    if (!data || data.version !== 1) return;
-    state.name = NAMES.indexOf(data.name) >= 0 ? data.name : "Cedar Fold";
-    state.settlement = num(data.settlement, 1, 1, 9999);
-    state.starIron = num(data.starIron, 0, 0, 99);
-    state.moonLacquer = num(data.moonLacquer, 0, 0, 99);
-    state.tempers = num(data.tempers, 0, 0, 12);
-    state.lacquerOffered = num(data.lacquerOffered, 0, 0, 8);
-    state.run = num(data.run, 0, 0, 1e12);
-    state.lifetime = num(data.lifetime, 0, 0, 1e12);
-    state.seals = num(data.seals, 0, 0, 999);
-    state.bestRun = num(data.bestRun, 0, 0, 1e12);
-    state.highestTier = num(data.highestTier, 0, 0, TIERS.length - 1);
-    state.knownTier = num(data.knownTier, 0, 0, TIERS.length - 1);
-    state.lastTick = num(data.lastTick, Date.now(), 0, Date.now() + 1000);
-    state.sawGuide = !!data.sawGuide;
-    state.sound = data.sound !== false;
-    state.selected = num(data.selected, 17, 0, PLOT_COUNT - 1);
-    state.seenGrants = Array.isArray(data.seenGrants) ? data.seenGrants.slice(-50).map(function (id) { return String(id).slice(0, 80); }) : [];
-    RES.forEach(function (k) {
-      state.res[k] = num(data.res && data.res[k], state.res[k], 0, 1e9);
-    });
-    state.grid = new Array(PLOT_COUNT).fill(null);
-    if (Array.isArray(data.grid)) {
-      for (var i = 0; i < PLOT_COUNT; i++) {
-        var b = data.grid[i];
-        if (!b || !BUILDINGS[b.type]) continue;
-        state.grid[i] = {
-          type: b.type,
-          level: clampLevel(b.type, b.level),
-          focus: b.focus === "stone" || b.focus === "food" ? b.focus : "wood"
-        };
-      }
-    }
-  }
-
-  function save() {
-    state.lastTick = Date.now();
+    var now = Date.now();
+    var raw = null, bak = null;
     try {
+      raw = localStorage.getItem(SAVE_KEY);
+      bak = localStorage.getItem(BAK_KEY);
+    } catch (e) { return R.freshState(now); }
+    if (raw == null && bak == null) return R.freshState(now);
+    var main = raw != null ? R.parse(raw, now) : { ok: false };
+    if (main.ok) return main.state;
+    if (raw != null) {
+      try { localStorage.setItem(UNREADABLE_KEY, raw); } catch (e) { /* quota */ }
+    }
+    var back = bak != null ? R.parse(bak, now) : { ok: false };
+    if (back.ok) {
+      loadNote = "The last save could not be read, so the village was restored from its backup.";
+      return back.state;
+    }
+    loadNote = "The save could not be read, so a new camp was started. The old save was set aside, not deleted.";
+    return R.freshState(now);
+  }
+  function save() {
+    state = R.touch(state, Date.now());
+    try {
+      var json = R.serialize(state);
       var prev = localStorage.getItem(SAVE_KEY);
-      if (prev) localStorage.setItem(SAVE_KEY + "-bak", prev);
-      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      if (prev && prev !== json && R.parse(prev, Date.now()).ok) localStorage.setItem(BAK_KEY, prev);
+      localStorage.setItem(SAVE_KEY, json);
     } catch (e) { /* private mode or quota */ }
   }
 
+  /* ---------- formatting ---------- */
   function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return "&#" + c.charCodeAt(0) + ";";
-    });
+    return String(s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; });
   }
-
   function fmtInt(n) { return Math.floor(n).toLocaleString("en-US"); }
   function fmtQty(n) {
     if (n >= 100) return fmtInt(n);
@@ -657,10 +1184,7 @@
     return t.toFixed(1);
   }
   function fmtRun(n) {
-    if (n < 1000) {
-      var t = Math.floor(n * 10) / 10;
-      return t.toFixed(1);
-    }
+    if (n < 1000) return (Math.floor(n * 10) / 10).toFixed(1);
     return fmtInt(n);
   }
   function fmtPer(n) {
@@ -677,148 +1201,14 @@
     if (m > 0) return m + "m " + sec + "s";
     return sec + "s";
   }
-
-  function eachBuilding(fn) {
-    for (var i = 0; i < PLOT_COUNT; i++) if (state.grid[i]) fn(state.grid[i], i);
-  }
-  function countType(type) {
-    var n = 0;
-    eachBuilding(function (b) { if (b.type === type) n++; });
-    return n;
-  }
-  function currentTierIndex() {
-    var i = 0;
-    for (var t = 0; t < TIERS.length; t++) if (state.run >= TIERS[t].need) i = t;
-    return i;
-  }
-  function isOpen(i) {
-    var order = PLOT_ORDER.indexOf(i);
-    return order > -1 && order < TIERS[currentTierIndex()].plots;
-  }
-  function opensAt(i) {
-    var order = PLOT_ORDER.indexOf(i);
-    for (var t = 0; t < TIERS.length; t++) if (order < TIERS[t].plots) return TIERS[t].name;
-    return "Hold";
-  }
-  function neighbors(i) {
-    var r = Math.floor(i / COLS);
-    var c = i % COLS;
-    var out = [];
-    if (r > 0) out.push(i - COLS);
-    if (r < 3) out.push(i + COLS);
-    if (c > 0) out.push(i - 1);
-    if (c < 4) out.push(i + 1);
-    return out;
-  }
-  function auraAt(i) {
-    var a = 0;
-    var list = neighbors(i);
-    for (var n = 0; n < list.length; n++) {
-      var b = state.grid[list[n]];
-      if (b && b.type === "tower") a += BUILDINGS.tower.aura[b.level - 1];
-    }
-    return Math.min(1, a);
-  }
-  function shrineLevels() {
-    var n = 0;
-    eachBuilding(function (b) { if (b.type === "shrine") n += b.level; });
-    return n;
-  }
-  function sealMult() { return 1 + state.seals * 0.15; }
-  function temperMult() { return 1 + state.tempers * 0.04; }
-  function lacquerMult() { return 1 + state.lacquerOffered * 0.12; }
-  function globalMult() { return sealMult() * temperMult(); }
-  function capsOf() {
-    var c = { wood: 70, stone: 50, food: 55, ink: 20 };
-    eachBuilding(function (b) {
-      if (b.type !== "store") return;
-      var add = BUILDINGS.store.cap[b.level - 1];
-      RES.forEach(function (k) { c[k] += add[k]; });
-    });
-    var m = 1 + state.seals * 0.08;
-    RES.forEach(function (k) { c[k] = Math.floor(c[k] * m); });
-    return c;
-  }
-  function foodFactor() {
-    var cap = capsOf().food;
-    if (cap <= 0) return 1;
-    var ratio = state.res.food / cap;
-    if (ratio >= 0.5) return 1;
-    return 0.45 + 0.55 * (ratio / 0.5);
-  }
-  function rates() {
-    var g = globalMult();
-    var inkM = g * lacquerMult();
-    var prospM = g * (1 + 0.025 * shrineLevels());
-    var foodF = foodFactor();
-    var out = {
-      wood: CAMP.wood * g,
-      stone: CAMP.stone * g,
-      food: CAMP.food * g,
-      ink: CAMP.ink * inkM,
-      prosperity: CAMP.prosperity * prospM
-    };
-    eachBuilding(function (b, i) {
-      var aura = 1 + auraAt(i);
-      var L = b.level - 1;
-      var def = BUILDINGS[b.type];
-      if (b.type === "hut") {
-        var focus = b.focus || "wood";
-        ["wood", "stone", "food"].forEach(function (k) {
-          var rate = (k === focus ? def.focusRate[L] : def.sideRate[L]) * g * aura;
-          out[k] += rate;
-        });
-      } else if (b.type === "training") out.prosperity += def.prosperity[L] * prospM * foodF;
-      else if (b.type === "tower") out.prosperity += def.prosperity[L] * prospM;
-      else if (b.type === "forge") out.prosperity += def.prosperity[L] * prospM;
-      else if (b.type === "shrine") {
-        out.ink += def.ink[L] * inkM * aura;
-        out.prosperity += def.prosperity[L] * prospM;
-      }
-    });
-    return out;
-  }
-  function tick(dt) {
-    if (dt <= 0) return;
-    var r = rates();
-    var caps = capsOf();
-    RES.forEach(function (k) {
-      if (state.res[k] < caps[k]) state.res[k] = Math.min(caps[k], state.res[k] + r[k] * dt);
-    });
-    state.run += r.prosperity * dt;
-    state.lifetime += r.prosperity * dt;
-    if (state.run > state.bestRun) state.bestRun = state.run;
-  }
-  function simulate(seconds) {
-    var left = seconds;
-    while (left > 0.0001) {
-      var dt = Math.min(5, left);
-      tick(dt);
-      left -= dt;
-    }
-  }
-  function grantProgress(n) {
-    state.run += n;
-    state.lifetime += n;
-    if (state.run > state.bestRun) state.bestRun = state.run;
-  }
-  function canAfford(cost) {
-    for (var i = 0; i < RES.length; i++) {
-      var k = RES[i];
-      if ((cost[k] || 0) > state.res[k] + 0.001) return false;
-    }
-    return true;
-  }
-  function pay(cost) {
-    RES.forEach(function (k) { state.res[k] = Math.max(0, state.res[k] - (cost[k] || 0)); });
+  function needText(cost) {
+    var short = R.shortfall(state, cost);
+    var parts = [];
+    RES.forEach(function (k) { if (short[k]) parts.push(short[k] + " " + k); });
+    return parts.length ? "Need " + parts.join(", ") : "Ready";
   }
   function costFrom(el) {
-    return {
-      wood: +el.dataset.wood || 0,
-      stone: +el.dataset.stone || 0,
-      food: +el.dataset.food || 0,
-      ink: +el.dataset.ink || 0
-    };
+    return { wood: +el.dataset.wood || 0, stone: +el.dataset.stone || 0, food: +el.dataset.food || 0, ink: +el.dataset.ink || 0 };
   }
   function costAttrs(cost) {
     return ' data-wood="' + (cost.wood || 0) + '" data-stone="' + (cost.stone || 0) + '" data-food="' + (cost.food || 0) + '" data-ink="' + (cost.ink || 0) + '"';
@@ -832,37 +1222,8 @@
     });
     return '<span class="costs">' + bits.join("") + "</span>";
   }
-  function needText(cost) {
-    var parts = [];
-    RES.forEach(function (k) {
-      var c = cost[k] || 0;
-      if (c > state.res[k] + 0.001) parts.push(Math.ceil(c - state.res[k]) + " " + k);
-    });
-    return parts.length ? "Need " + parts.join(", ") : "Ready";
-  }
-  function startRes(seals) {
-    return {
-      wood: 18 + seals * 10,
-      stone: 8 + seals * 6,
-      food: 12 + seals * 6,
-      ink: 2 + Math.min(8, seals)
-    };
-  }
-  function applyStartRes() {
-    var s = startRes(state.seals);
-    var caps = capsOf();
-    RES.forEach(function (k) { state.res[k] = Math.min(caps[k], s[k]); });
-  }
-  function nextName() {
-    var pool = NAMES.filter(function (n) { return n !== state.name; });
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
-  function nothingBuilt() {
-    for (var i = 0; i < PLOT_COUNT; i++) if (state.grid[i]) return false;
-    return true;
-  }
   function tierProgress() {
-    var i = currentTierIndex();
+    var i = R.currentTier(state);
     if (i >= TIERS.length - 1) return { pct: 1, detail: fmtRun(state.run) + " · seat of the clan" };
     var next = TIERS[i + 1];
     var span = next.need - TIERS[i].need;
@@ -877,25 +1238,27 @@
     if (!bits.length) return "No permanent bonuses yet. A seal is kept when you found anew.";
     return bits.join(" · ");
   }
-  function syncTier(announce) {
-    var i = currentTierIndex();
-    if (i > state.highestTier) state.highestTier = i;
-    if (i > state.knownTier) {
-      state.knownTier = i;
-      hubEvent("tier-reached", { tier: i, name: TIERS[i].name });
-      if (announce) {
-        toast(TIERS[i].name + " — new ground is open on the slope.");
-        play("tier");
-        renderBoard();
-        renderSheet();
-      }
-      return TIERS[i].name;
+  function opensAtName(i) { return TIERS[R.plotOpensAtTier(i)].name; }
+
+  /* ---------- tiers ---------- */
+  function afterTier(announce) {
+    var t = R.syncTier(state);
+    state = t.state;
+    if (!t.reached.length) return null;
+    t.reached.forEach(function (i) { hubEvent("tier-reached", { tier: i, name: TIERS[i].name }); });
+    var last = TIERS[t.reached[t.reached.length - 1]].name;
+    if (announce) {
+      toast(last + " reached. New ground is open on the slope.");
+      play("tier");
+      renderBoard();
+      renderSheet();
     }
-    return null;
+    return last;
   }
 
+  /* ---------- rendering ---------- */
   function icon(type) {
-    var c = 'viewBox="0 0 64 64" aria-hidden="true"';
+    var c = 'viewBox="0 0 64 64" aria-hidden="true" focusable="false"';
     if (type === "hut") return '<svg ' + c + '><path d="M8 30 L32 12 L56 30 V34 H8 Z" fill="#6b3a2a"/><rect x="16" y="32" width="32" height="20" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><path d="M30 52 V40 H38 V52" fill="#1c1915"/><rect x="20" y="38" width="6" height="6" fill="#e0b15a"/></svg>';
     if (type === "store") return '<svg ' + c + '><rect x="14" y="24" width="36" height="22" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><path d="M10 24 H54 L46 14 H18 Z" fill="#1c1915"/><rect x="18" y="46" width="4" height="8" fill="#1c1915"/><rect x="42" y="46" width="4" height="8" fill="#1c1915"/><rect x="30" y="32" width="8" height="14" fill="#6b3a2a"/></svg>';
     if (type === "training") return '<svg ' + c + '><rect x="12" y="16" width="40" height="34" fill="#f4ecdc" stroke="#1c1915" stroke-width="2"/><circle cx="32" cy="32" r="8" fill="none" stroke="#b64032" stroke-width="2"/><path d="M12 16 L32 8 L52 16" fill="#1c1915"/></svg>';
@@ -908,87 +1271,129 @@
   function pips(level, max) {
     var s = "";
     for (var i = 1; i <= max; i++) s += '<i class="' + (i <= level ? "on" : "") + '"></i>';
-    return '<span class="pips">' + s + "</span>";
+    return '<span class="pips" aria-hidden="true">' + s + "</span>";
   }
   function describe(b, index, level) {
-    var g = globalMult();
-    var inkM = g * lacquerMult();
-    var prospM = g * (1 + 0.025 * shrineLevels());
-    var aura = 1 + auraAt(index);
-    var L = level - 1;
+    var y = R.buildingYield(state, index, b.type, level, b.focus);
     var def = BUILDINGS[b.type];
     if (b.type === "hut") {
-      var focus = b.focus || "wood";
-      return ["wood", "stone", "food"].map(function (k) {
-        var rate = (k === focus ? def.focusRate[L] : def.sideRate[L]) * g * aura;
-        return fmtPer(rate) + "/s " + k;
-      }).join(" · ");
+      return R.GATHER.map(function (k) { return fmtPer(y[k]) + "/s " + k; }).join(" · ");
     }
     if (b.type === "store") {
-      var add = def.cap[L];
+      var add = def.cap[level - 1];
       return "+" + add.wood + " wood, +" + add.stone + " stone, +" + add.food + " food, +" + add.ink + " ink cap";
     }
-    if (b.type === "training") return fmtPer(def.prosperity[L] * prospM * foodFactor()) + "/s prosperity";
-    if (b.type === "tower") return fmtPer(def.prosperity[L] * prospM) + "/s prosperity · neighbors +" + Math.round(def.aura[L] * 100) + "%";
-    if (b.type === "shrine") return fmtPer(def.ink[L] * inkM * aura) + "/s ink · " + fmtPer(def.prosperity[L] * prospM) + "/s prosperity";
-    if (b.type === "forge") return fmtPer(def.prosperity[L] * prospM) + "/s prosperity";
-    return "";
+    if (b.type === "tower") return fmtPer(y.prosperity) + "/s prosperity · neighbours +" + Math.round(def.aura[level - 1] * 100) + "%";
+    if (b.type === "shrine") return fmtPer(y.ink) + "/s ink · " + fmtPer(y.prosperity) + "/s prosperity";
+    return fmtPer(y.prosperity) + "/s prosperity";
+  }
+  function boosted(i) {
+    var b = state.grid[i];
+    return !!(b && (b.type === "hut" || b.type === "shrine") && R.auraAt(state, i) > 0);
+  }
+  /* Accessible name starts with the visible label (WCAG label in name), then the detail. */
+  function plotLabel(i, visible) {
+    var where = R.ROW_NAME[Math.floor(i / COLS)].toLowerCase() + " plot " + ((i % COLS) + 1);
+    if (!R.plotOpen(state, i)) return visible + ": misted until " + opensAtName(i) + ", " + where;
+    var b = state.grid[i];
+    if (!b) return visible + ": open ground, " + where;
+    var text = visible + ": " + BUILDINGS[b.type].name + " level " + b.level;
+    if (b.type === "hut") text += ", " + FOCUS_LABEL[b.focus].toLowerCase() + " focus";
+    if (boosted(i)) text += ", boosted by a watchtower";
+    return text + ", " + where;
   }
 
   function renderBoard() {
+    var board = document.getElementById("board");
+    var hadFocus = board.contains(document.activeElement);
     var html = "";
-    for (var r = 0; r < 4; r++) {
-      html += '<div class="terrace" data-row="' + r + '"><p class="terrace-name">' + ROW_NAME[r] + '</p><div class="plots">';
+    for (var r = 0; r < R.ROWS; r++) {
+      html += '<div class="terrace" data-row="' + r + '"><p class="terrace-name" aria-hidden="true">' + R.ROW_NAME[r] + '</p><div class="plots">';
       for (var c = 0; c < COLS; c++) {
         var i = r * COLS + c;
-        var open = isOpen(i);
+        var open = R.plotOpen(state, i);
         var b = state.grid[i];
         var cls = "plot";
         if (!open) cls += " locked";
         else if (!b) cls += " open";
         if (i === state.selected) cls += " selected";
         if (i === flash) cls += " just-built";
-        if (open && b && (b.type === "hut" || b.type === "shrine") && auraAt(i) > 0) cls += " boosted";
-        var label = !open ? opensAt(i) : b ? SHORT[b.type] + " " + b.level : "Open";
+        if (open && boosted(i)) cls += " boosted";
+        var label = !open ? opensAtName(i) : b ? SHORT[b.type] + " " + b.level : "Open";
         var graphic = !open ? icon("lock") : b ? icon(b.type) : icon("plus");
-        var pressed = i === state.selected ? "true" : "false";
-        html += '<button type="button" class="' + cls + '" data-action="select" data-index="' + i + '" aria-pressed="' + pressed + '" aria-label="' + esc(label) + '">' + graphic + '<span class="nm">' + esc(label) + "</span></button>";
+        html += '<button type="button" class="' + cls + '" data-action="select" data-index="' + i + '"' +
+          ' tabindex="' + (i === focusPlot ? "0" : "-1") + '"' +
+          (i === state.selected ? ' aria-current="true"' : "") +
+          ' aria-label="' + esc(plotLabel(i, label)) + '">' + graphic + '<span class="nm" aria-hidden="true">' + esc(label) + "</span></button>";
       }
       html += "</div></div>";
     }
-    document.getElementById("board").innerHTML = html;
+    board.innerHTML = html;
+    flash = -1;
+    if (hadFocus) focusPlotButton(focusPlot);
+  }
+  function focusPlotButton(i) {
+    var el = document.querySelector('.plot[data-index="' + i + '"]');
+    if (el) el.focus();
+  }
+  function moveBoardFocus(i) {
+    focusPlot = i;
+    document.querySelectorAll(".plot").forEach(function (el) {
+      el.tabIndex = Number(el.dataset.index) === i ? 0 : -1;
+    });
+    focusPlotButton(i);
   }
 
-  function renderSheet() {
+  function activeSelector(root) {
+    var a = document.activeElement;
+    if (!a || !root.contains(a) || !a.dataset || !a.dataset.action) return null;
+    var sel = "[data-action='" + a.dataset.action + "']";
+    if (a.dataset.type) sel += "[data-type='" + a.dataset.type + "']";
+    if (a.dataset.focus) sel += "[data-focus='" + a.dataset.focus + "']";
+    return sel;
+  }
+  /*
+   * Re-render the sheet. Focus goes to `want` (a selector) if given, otherwise
+   * back to the same control if focus was in the sheet, otherwise the heading.
+   */
+  function renderSheet(want) {
     var root = document.getElementById("sheet");
+    var hadFocus = root.contains(document.activeElement);
+    var keep = hadFocus ? activeSelector(root) : null;
     var i = state.selected;
-    if (!isOpen(i)) {
-      root.innerHTML = "<h2>Misted ground</h2><p class='hint'>This plot opens at " + esc(opensAt(i)) + ".</p>";
-      return;
+    if (!R.plotOpen(state, i)) {
+      root.innerHTML = "<h2 id='sheet-title' tabindex='-1'>Misted ground</h2><p class='hint'>This plot opens at " + esc(opensAtName(i)) + ".</p>";
+    } else if (!state.grid[i]) root.innerHTML = buildListHTML();
+    else root.innerHTML = upgradeHTML(state.grid[i], i);
+    if (hadFocus || want) {
+      var target = (want && root.querySelector(want + ":not(:disabled)")) ||
+        (keep && root.querySelector(keep + ":not(:disabled)")) ||
+        (hadFocus ? root.querySelector("h2") : null);
+      if (target) target.focus();
     }
-    var b = state.grid[i];
-    if (!b) root.innerHTML = buildListHTML();
-    else root.innerHTML = upgradeHTML(b, i);
   }
 
   function buildListHTML() {
-    var hint = nothingBuilt()
+    var hint = R.nothingBuilt(state)
       ? "The ground in front of the camp is open. A gatherer hut is the usual first raising."
-      : "Open ground on the " + ROW_NAME[Math.floor(state.selected / COLS)].toLowerCase() + ". Choose what to raise.";
-    var html = "<p class='eyebrow'>Open plot</p><h2>Raise a building</h2><p class='hint'>" + esc(hint) + "</p>";
-    ORDER.forEach(function (type) {
+      : "Open ground on the " + R.ROW_NAME[Math.floor(state.selected / COLS)].toLowerCase() + ". Choose what to raise.";
+    var html = "<p class='eyebrow'>Open plot</p><h2 id='sheet-title' tabindex='-1'>Raise a building</h2><p class='hint'>" + esc(hint) + "</p>";
+    var tier = R.currentTier(state);
+    R.ORDER.forEach(function (type) {
       var def = BUILDINGS[type];
-      var tierLocked = currentTierIndex() < def.tier;
-      var maxed = countType(type) >= def.max;
+      var tierLocked = tier < def.tier;
+      var maxed = R.countType(state, type) >= def.max;
       var block = tierLocked || maxed;
       var reason = tierLocked ? "Opens at " + TIERS[def.tier].name : maxed ? "All of these already stand" : "";
       var cost = def.costs[0];
-      html += '<button type="button" class="build" data-action="place" data-type="' + type + '"' + costAttrs(cost) + (block ? ' data-block="1" disabled' : "") + ">";
+      var needId = "need-" + type;
+      html += '<button type="button" class="build" data-action="place" data-type="' + type + '"' + costAttrs(cost) +
+        ' aria-describedby="' + needId + '"' + (block ? ' data-block="1" disabled' : "") + ">";
       html += icon(type);
       html += "<span><b>" + esc(def.name) + "</b><small>" + esc(def.short) + "</small>";
       html += costHTML(cost);
-      html += '<small class="need"' + costAttrs(cost) + (block ? ' data-block="1"' : "") + ">" + esc(block ? reason : needText(cost)) + "</small>";
-      html += "<small>" + countType(type) + " / " + def.max + "</small></span></button>";
+      html += '<small class="need" id="' + needId + '"' + costAttrs(cost) + (block ? ' data-block="1"' : "") + ">" + esc(block ? reason : needText(cost)) + "</small>";
+      html += "<small>" + R.countType(state, type) + " / " + def.max + " standing</small></span></button>";
     });
     return html;
   }
@@ -996,13 +1401,13 @@
   function upgradeHTML(b, index) {
     var def = BUILDINGS[b.type];
     var maxed = b.level >= def.maxLevel;
-    var html = "<p class='eyebrow'>" + esc(ROW_NAME[Math.floor(index / COLS)]) + "</p>";
-    html += "<h2>" + esc(def.name) + "</h2>";
+    var html = "<p class='eyebrow'>" + esc(R.ROW_NAME[Math.floor(index / COLS)]) + "</p>";
+    html += "<h2 id='sheet-title' tabindex='-1'>" + esc(def.name) + " <span class='sr-only'>level " + b.level + " of " + def.maxLevel + "</span></h2>";
     html += pips(b.level, def.maxLevel);
     html += "<p class='hint'>" + esc(def.short) + "</p>";
     if (b.type === "hut") {
       html += '<div class="foci" role="group" aria-label="Hut focus">';
-      ["wood", "stone", "food"].forEach(function (f) {
+      R.GATHER.forEach(function (f) {
         html += '<button type="button" data-action="focus" data-focus="' + f + '" aria-pressed="' + (b.focus === f ? "true" : "false") + '">' + FOCUS_LABEL[f] + "</button>";
       });
       html += "</div>";
@@ -1011,18 +1416,16 @@
     if (!maxed) html += '<p class="out" id="out-next">Next · ' + esc(describe(b, index, b.level + 1)) + "</p>";
     else html += '<p class="out">Fully raised.</p>';
     if (b.type === "training") html += '<p class="sub" id="food-note"></p>';
-    if ((b.type === "hut" || b.type === "shrine") && auraAt(index) > 0) {
-      html += '<p class="sub" id="aura-note">Neighboring watchtowers add ' + Math.round(auraAt(index) * 100) + "%.</p>";
-    }
+    if (boosted(index)) html += '<p class="sub" id="aura-note">Neighbouring watchtowers add ' + Math.round(R.auraAt(state, index) * 100) + "%.</p>";
     if (!maxed) {
       var cost = def.costs[b.level];
       html += costHTML(cost);
-      html += '<p class="need"' + costAttrs(cost) + ">" + esc(needText(cost)) + "</p>";
-      html += '<div class="actions"><button type="button" class="btn ink" data-action="upgrade"' + costAttrs(cost) + ">Raise to level " + (b.level + 1) + "</button>";
+      html += '<p class="need" id="need-upgrade"' + costAttrs(cost) + ">" + esc(needText(cost)) + "</p>";
+      html += '<div class="actions"><button type="button" class="btn ink" data-action="upgrade" aria-describedby="need-upgrade"' + costAttrs(cost) + ">Raise to level " + (b.level + 1) + "</button>";
     } else html += '<div class="actions">';
     if (confirmClear) {
-      html += '<p class="hint">Clear this plot? Half the first cost returns, if the stores have room.</p>';
-      html += '<button type="button" class="btn primary" data-action="clear-yes">Clear it</button>';
+      html += '<p class="hint" id="clear-q">Clear this plot? Half the first cost returns, if the stores have room.</p>';
+      html += '<button type="button" class="btn primary" data-action="clear-yes" aria-describedby="clear-q">Clear it</button>';
       html += '<button type="button" class="btn line" data-action="clear-no">Keep it</button>';
     } else {
       html += '<button type="button" class="btn line" data-action="clear-ask">Clear plot</button>';
@@ -1033,82 +1436,93 @@
     return html;
   }
 
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el.textContent !== text) el.textContent = text;
+  }
   function paint() {
-    var r = rates();
-    var caps = capsOf();
+    var r = R.rates(state);
+    var caps = R.caps(state);
     var tp = tierProgress();
-    document.getElementById("settle-name").textContent = state.name;
-    document.getElementById("seal-line").textContent = "Settlement " + state.settlement + " · " + state.seals + (state.seals === 1 ? " seal" : " seals");
-    document.getElementById("life").textContent = fmtRun(state.lifetime);
-    document.getElementById("rate-p").textContent = fmtPer(r.prosperity) + "/s prosperity";
-    document.getElementById("tier-name").textContent = TIERS[currentTierIndex()].name;
-    document.getElementById("tier-detail").textContent = tp.detail;
+    setText("settle-name", state.name);
+    setText("seal-line", "Settlement " + state.settlement + " · " + state.seals + (state.seals === 1 ? " seal" : " seals"));
+    setText("life", fmtRun(state.lifetime));
+    setText("rate-p", fmtPer(r.prosperity) + "/s prosperity");
+    setText("tier-name", TIERS[R.currentTier(state)].name);
+    setText("tier-detail", tp.detail);
     document.getElementById("tier-bar").style.width = (tp.pct * 100) + "%";
-    document.getElementById("bonus-line").textContent = bonusLine() + " · best " + fmtInt(state.bestRun);
+    setText("bonus-line", bonusLine() + " · best " + fmtInt(state.bestRun));
     RES.forEach(function (k) {
-      document.getElementById("q-" + k).textContent = fmtQty(state.res[k]);
-      document.getElementById("c-" + k).textContent = "/ " + fmtInt(caps[k]);
+      setText("q-" + k, fmtQty(state.res[k]));
+      setText("c-" + k, "/ " + fmtInt(caps[k]));
       var full = state.res[k] >= caps[k] - 0.05;
       var rateEl = document.getElementById("r-" + k);
-      rateEl.textContent = full ? "full" : fmtPer(r[k]) + "/s";
+      setText("r-" + k, full ? "full" : fmtPer(r[k]) + "/s");
       rateEl.classList.toggle("full", full);
       var pct = caps[k] > 0 ? Math.max(0, Math.min(1, state.res[k] / caps[k])) : 0;
       document.getElementById("b-" + k).style.width = (pct * 100) + "%";
     });
-    var found = document.getElementById("found-btn");
-    var ready = state.run >= PRESTIGE_AT;
-    found.disabled = !ready;
-    found.classList.toggle("ready", ready);
-    found.textContent = ready ? "Found a new settlement" : "Founding at " + PRESTIGE_AT;
+    var foundBtn = document.getElementById("found-btn");
+    var ready = R.canFound(state);
+    foundBtn.disabled = !ready;
+    foundBtn.classList.toggle("ready", ready);
+    setText("found-btn", ready ? "Found a new settlement" : "Founding at " + R.PRESTIGE_AT);
     var soundBtn = document.getElementById("sound-btn");
-    soundBtn.textContent = state.sound ? "Sound on" : "Sound off";
+    setText("sound-btn", state.sound ? "Sound on" : "Sound off");
     soundBtn.setAttribute("aria-pressed", state.sound ? "true" : "false");
-    document.getElementById("iron-n").textContent = String(state.starIron);
-    document.getElementById("lacquer-n").textContent = String(state.moonLacquer);
-    document.getElementById("vault-sum").textContent = "Clan vault · star-iron " + state.starIron + " · moon-lacquer " + state.moonLacquer;
-    var hasForge = countType("forge") > 0;
-    var hasShrine = countType("shrine") > 0;
-    document.getElementById("temper-btn").disabled = !(state.starIron >= 1 && hasForge && state.tempers < 12);
-    document.getElementById("offer-btn").disabled = !(state.moonLacquer >= 1 && hasShrine && state.lacquerOffered < 8);
-    document.getElementById("temper-note").textContent = !hasForge
+    setText("iron-n", String(state.starIron));
+    setText("lacquer-n", String(state.moonLacquer));
+    setText("vault-sum", "Clan vault · star-iron " + state.starIron + " · moon-lacquer " + state.moonLacquer);
+    var hasForge = R.countType(state, "forge") > 0;
+    var hasShrine = R.countType(state, "shrine") > 0;
+    document.getElementById("temper-btn").disabled = !(state.starIron >= 1 && hasForge && state.tempers < R.TEMPER_MAX);
+    document.getElementById("offer-btn").disabled = !(state.moonLacquer >= 1 && hasShrine && state.lacquerOffered < R.OFFER_MAX);
+    setText("temper-note", !hasForge
       ? "Raise the forge annex (Hold) before tempering. " + state.tempers + " / 12 edge."
-      : state.tempers >= 12
+      : state.tempers >= R.TEMPER_MAX
         ? "The edge is as keen as it can be held."
-        : "Each temper is +4% to every yield, kept forever. " + state.tempers + " / 12.";
-    document.getElementById("offer-note").textContent = !hasShrine
-      ? "Raise a shrine (Village) before offering. " + state.lacquerOffered + "/8 blessings."
-      : "Each offering is +12% ink, kept forever. " + state.lacquerOffered + " / 8.";
+        : "Each temper is +4% to every yield, kept forever. " + state.tempers + " / 12.");
+    setText("offer-note", !hasShrine
+      ? "Raise a shrine (Village) before offering. " + state.lacquerOffered + " / 8 blessings."
+      : state.lacquerOffered >= R.OFFER_MAX
+        ? "The ink well is as deep as it can be blessed."
+        : "Each offering is +12% ink, kept forever. " + state.lacquerOffered + " / 8.");
     document.querySelectorAll(".cost").forEach(function (el) {
-      var k = el.dataset.k;
-      var n = Number(el.dataset.n);
-      el.classList.toggle("short", state.res[k] + 0.001 < n);
+      el.classList.toggle("short", state.res[el.dataset.k] + 0.001 < Number(el.dataset.n));
     });
     document.querySelectorAll(".need").forEach(function (el) {
       if (el.dataset.block === "1") return;
       var line = needText(costFrom(el));
-      el.textContent = line;
+      if (el.textContent !== line) el.textContent = line;
       el.classList.toggle("ok", line === "Ready");
     });
     document.querySelectorAll("[data-action='place'], [data-action='upgrade']").forEach(function (btn) {
       if (btn.dataset.block === "1") { btn.disabled = true; return; }
-      btn.disabled = !canAfford(costFrom(btn));
+      if (R.canAfford(state, costFrom(btn))) {
+        btn.disabled = false;
+        btn.removeAttribute("aria-disabled");
+      } else if (document.activeElement === btn) {
+        // A focused button that cannot be afforded stays focusable, so keyboard focus is not lost.
+        btn.setAttribute("aria-disabled", "true");
+      } else {
+        btn.disabled = true;
+        btn.removeAttribute("aria-disabled");
+      }
     });
-    var nowEl = document.getElementById("out-now");
     var b = state.grid[state.selected];
-    if (nowEl && b) nowEl.textContent = "Now · " + describe(b, state.selected, b.level);
+    var nowEl = document.getElementById("out-now");
+    if (nowEl && b) setText("out-now", "Now · " + describe(b, state.selected, b.level));
     var nextEl = document.getElementById("out-next");
-    if (nextEl && b && b.level < BUILDINGS[b.type].maxLevel) nextEl.textContent = "Next · " + describe(b, state.selected, b.level + 1);
+    if (nextEl && b && b.level < BUILDINGS[b.type].maxLevel) setText("out-next", "Next · " + describe(b, state.selected, b.level + 1));
     var foodNote = document.getElementById("food-note");
     if (foodNote) {
-      var f = foodFactor();
-      foodNote.textContent = f >= 0.999
+      var f = R.foodFactor(state);
+      setText("food-note", f >= 0.999
         ? "Food stores are healthy. Training is at full strength."
-        : "Food stores are low. Training is at " + Math.round(f * 100) + "% strength.";
+        : "Food stores are low. Training is at " + Math.round(f * 100) + "% strength.");
     }
     document.querySelectorAll(".plot").forEach(function (el) {
-      var i = Number(el.dataset.index);
-      var plot = state.grid[i];
-      el.classList.toggle("boosted", !!(plot && (plot.type === "hut" || plot.type === "shrine") && auraAt(i) > 0));
+      el.classList.toggle("boosted", boosted(Number(el.dataset.index)));
     });
   }
 
@@ -1119,19 +1533,23 @@
   }
 
   function toast(msg) {
+    var root = document.getElementById("toasts");
+    while (root.children.length >= MAX_TOASTS) root.removeChild(root.firstChild);
     var el = document.createElement("div");
     el.className = "toast";
     el.textContent = msg;
-    document.getElementById("toasts").appendChild(el);
+    root.appendChild(el);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3400);
   }
 
+  /* ---------- modal ---------- */
   function openModal(kind, html) {
+    if (!modalKind) modalReturn = document.activeElement;
     modalKind = kind;
     var root = document.getElementById("modal");
     root.hidden = false;
-    root.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true">' + html + "</div>";
-    var btn = root.querySelector("button");
+    root.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">' + html + "</div>";
+    var btn = root.querySelector("[data-autofocus]") || root.querySelector("button");
     if (btn) btn.focus();
   }
   function closeModal() {
@@ -1139,9 +1557,31 @@
     var root = document.getElementById("modal");
     root.hidden = true;
     root.innerHTML = "";
+    var back = modalReturn;
+    modalReturn = null;
+    if (back && back !== document.body && document.body.contains(back) && !back.disabled) back.focus();
+    else focusPlotButton(state.selected);
+  }
+  function trapFocus(e) {
+    var list = document.querySelectorAll("#modal button:not(:disabled), #modal [href], #modal [tabindex]:not([tabindex='-1'])");
+    if (!list.length) return;
+    var first = list[0];
+    var last = list[list.length - 1];
+    if (!document.getElementById("modal").contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  function afterModalClosed(kind) {
+    if (kind === "guide") finishGuide();
+    else if (pendingAway && !modalKind) {
+      var away = pendingAway;
+      pendingAway = null;
+      openAway(away);
+    }
   }
   function finishGuide() {
     if (!state.sawGuide) {
+      state = R.clone(state);
       state.sawGuide = true;
       save();
     }
@@ -1154,23 +1594,24 @@
   function openGuide() {
     openModal("guide", [
       "<p class='eyebrow'>How to play</p>",
-      "<h2>A camp on the cedar slope</h2>",
+      "<h2 id='modal-title'>A camp on the cedar slope</h2>",
       "<ol class='steps'>",
       "<li>The camp fire already gathers wood, stone, food, and a thread of spirit-ink.</li>",
-      "<li>Tap open ground, then raise a building. A gatherer hut can focus on timber, stone, or food.</li>",
-      "<li>Storehouses hold more. Watchtowers help their neighbors. The shrine draws ink. Training grounds and the forge annex raise prosperity.</li>",
-      "<li>Clan prosperity is the score. At 160 on this slope you may found a new settlement. You keep a seal — a permanent bonus — plus any rare metals.</li>",
+      "<li>Choose open ground, then raise a building. A gatherer hut can focus on timber, stone, or food.</li>",
+      "<li>Storehouses hold more. Watchtowers help their neighbours. The shrine draws ink. Training grounds and the forge annex raise prosperity.</li>",
+      "<li>Clan prosperity is the score. At 160 on this slope you may found a new settlement. You keep a seal, a permanent bonus, plus any rare metals.</li>",
       "<li>Star-iron and moon-lacquer are not gathered here. Other Rokumon games can send them to the clan vault.</li>",
+      "<li>Keyboard: Tab moves between areas, arrow keys move between plots, Enter or Space chooses. Press ? to open this guide.</li>",
       "</ol>",
-      "<div class='row'><button type='button' class='btn primary' data-action='guide-close'>Begin</button></div>"
+      "<div class='row'><button type='button' class='btn primary' data-action='guide-close' data-autofocus>Begin</button></div>"
     ].join(""));
   }
   function openPrestige() {
-    if (state.run < PRESTIGE_AT) { play("deny"); return; }
+    if (!R.canFound(state)) { play("deny"); return; }
     var seals = state.seals + 1;
     openModal("prestige", [
       "<p class='eyebrow'>Founding</p>",
-      "<h2>Leave this slope</h2>",
+      "<h2 id='modal-title'>Leave this slope</h2>",
       "<p>The camp, the buildings, and this settlement’s stores return to mist.</p>",
       "<ul>",
       "<li>Seal " + state.seals + " → " + seals + ". Yields become +" + (seals * 15) + "%.</li>",
@@ -1179,28 +1620,29 @@
       "<li>The next camp starts a little richer.</li>",
       "</ul>",
       "<p class='sub'>The hold and the forge annex open at " + TIERS[3].need + " prosperity. You can stay and climb, or found now.</p>",
-      "<div class='row'><button type='button' class='btn line' data-action='modal-close'>Stay</button>",
+      "<div class='row'><button type='button' class='btn line' data-action='modal-close' data-autofocus>Stay</button>",
       "<button type='button' class='btn primary' data-action='prestige-confirm'>Found the next settlement</button></div>"
     ].join(""));
   }
   function openAway(info) {
     if (!info) return;
+    var capsNow = R.caps(state);
     var lines = "";
     RES.forEach(function (k) {
-      var gain = Math.max(0, state.res[k] - info.before[k]);
+      var gain = Math.max(0, state.res[k] - info.before.res[k]);
       var note = "";
-      if (info.before[k] >= info.capsBefore[k] - 0.5) note = " · already full";
-      else if (state.res[k] >= capsOf()[k] - 0.5 && gain > 0) note = " · filled";
+      if (info.before.res[k] >= info.capsBefore[k] - 0.5) note = " · already full";
+      else if (state.res[k] >= capsNow[k] - 0.5 && gain > 0) note = " · filled";
       lines += "<div class='gain'><span>" + k + "</span><span>+" + fmtQty(gain) + note + "</span></div>";
     });
-    var lifeGain = Math.max(0, state.lifetime - info.before.life);
+    var lifeGain = Math.max(0, state.lifetime - info.before.lifetime);
     lines += "<div class='gain'><span>Prosperity</span><span>+" + fmtQty(lifeGain) + "</span></div>";
     var extra = "";
-    if (info.limited) extra += "<p class='sub'>Shown time is capped at eight hours.</p>";
+    if (info.limited) extra += "<p class='sub'>You were away longer than eight hours. Only eight hours count.</p>";
     if (info.crossed) extra += "<p class='sub'>The slope reached " + esc(info.crossed) + " while you were away.</p>";
     openModal("away", [
       "<p class='eyebrow'>While you were away</p>",
-      "<h2>The slope kept working</h2>",
+      "<h2 id='modal-title'>The slope kept working</h2>",
       "<p>For " + fmtDur(info.ms) + ".</p>",
       lines,
       extra,
@@ -1210,119 +1652,110 @@
   function mergeAway(a, b) {
     if (!a) return b;
     if (!b) return a;
-    return { ms: Math.min(EIGHT_H, a.ms + b.ms), limited: a.limited || b.limited, before: a.before, capsBefore: a.capsBefore, crossed: b.crossed || a.crossed };
+    return { ms: Math.min(R.OFFLINE_CAP_MS, a.ms + b.ms), limited: a.limited || b.limited, before: a.before, capsBefore: a.capsBefore, crossed: b.crossed || a.crossed };
   }
   function handleAway(info) {
     if (!info) return;
-    if (!state.sawGuide || modalKind === "guide") pendingAway = mergeAway(pendingAway, info);
-    else if (!modalKind) openAway(info);
-    else pendingAway = mergeAway(pendingAway, info);
+    if (!state.sawGuide || modalKind) pendingAway = mergeAway(pendingAway, info);
+    else openAway(info);
   }
+  /* Apply time that passed while the page was closed, hidden, or frozen. */
   function catchUp() {
-    var now = Date.now();
-    if (!state.lastTick || state.lastTick < 1e11) { state.lastTick = now; return null; }
-    var ms = now - state.lastTick;
-    state.lastTick = now;
-    if (!isFinite(ms) || ms < 800) return null;
-    var limited = ms > EIGHT_H;
-    var simMs = Math.min(ms, EIGHT_H);
-    var before = { wood: state.res.wood, stone: state.res.stone, food: state.res.food, ink: state.res.ink, life: state.lifetime };
-    var capsBefore = capsOf();
-    simulate(simMs / 1000);
-    var crossed = syncTier(simMs < 15000);
-    if (simMs < 15000) return null;
-    return { ms: simMs, limited: limited, before: before, capsBefore: capsBefore, crossed: crossed };
+    var before = state;
+    var r = R.offline(state, Date.now());
+    state = r.state;
+    acc = 0;
+    var notice = r.simulatedMs >= R.AWAY_NOTICE_MS;
+    var crossed = afterTier(!notice);
+    if (!notice) return null;
+    return { ms: r.simulatedMs, limited: r.limited, before: before, capsBefore: R.caps(before), crossed: crossed };
   }
 
-  function place(type) {
+  /* ---------- actions ---------- */
+  function deny(reason, cost) {
+    play("deny");
+    if (reason === "cost" && cost) toast(needText(cost) + ".");
+  }
+  function doPlace(type) {
     var i = state.selected;
-    var def = BUILDINGS[type];
-    if (!def || !isOpen(i) || state.grid[i]) return;
-    if (currentTierIndex() < def.tier || countType(type) >= def.max) { play("deny"); return; }
-    var cost = def.costs[0];
-    if (!canAfford(cost)) { play("deny"); toast(needText(cost) + "."); return; }
-    pay(cost);
-    state.grid[i] = { type: type, level: 1, focus: "wood" };
-    grantProgress(14);
+    var r = R.place(state, i, type);
+    if (!r.ok) { deny(r.reason, R.isType(type) ? BUILDINGS[type].costs[0] : null); return; }
+    state = r.state;
     flash = i;
     play("place");
-    toast(def.name + " raised.");
-    renderAll();
+    toast(BUILDINGS[type].name + " raised" + (r.granted ? ", +" + r.granted + " prosperity." : "."));
+    renderBoard();
+    renderSheet("[data-action='upgrade']");
+    paint();
     save();
-    syncTier(true);
+    afterTier(true);
   }
-  function upgrade() {
+  function doUpgrade() {
     var i = state.selected;
     var b = state.grid[i];
-    if (!b) return;
-    var def = BUILDINGS[b.type];
-    if (b.level >= def.maxLevel) return;
-    var cost = def.costs[b.level];
-    if (!canAfford(cost)) { play("deny"); toast(needText(cost) + "."); return; }
-    pay(cost);
-    b.level += 1;
-    grantProgress(8 + 6 * b.level);
+    var r = R.upgrade(state, i);
+    if (!r.ok) { deny(r.reason, b && b.level < BUILDINGS[b.type].maxLevel ? BUILDINGS[b.type].costs[b.level] : null); return; }
+    state = r.state;
     play("upgrade");
-    toast(def.name + " is now level " + b.level + ".");
-    renderAll();
+    toast(BUILDINGS[b.type].name + " is now level " + r.level + (r.granted ? ", +" + r.granted + " prosperity." : "."));
+    renderBoard();
+    renderSheet("[data-action='upgrade']");
+    paint();
     save();
-    syncTier(true);
+    afterTier(true);
   }
-  function clearPlot() {
-    var i = state.selected;
-    var b = state.grid[i];
-    if (!b) return;
-    var refund = {};
-    var base = BUILDINGS[b.type].costs[0];
-    RES.forEach(function (k) { refund[k] = Math.floor((base[k] || 0) * 0.5); });
-    state.grid[i] = null;
-    var caps = capsOf();
-    var lost = false;
-    RES.forEach(function (k) {
-      var add = refund[k] || 0;
-      var room = Math.max(0, caps[k] - state.res[k]);
-      if (add > room + 0.001) lost = true;
-      state.res[k] += Math.min(add, room);
-    });
+  function doClear() {
+    var r = R.clearPlot(state, state.selected);
+    if (!r.ok) return;
+    state = r.state;
     confirmClear = false;
     play("place");
-    toast(lost ? "Plot cleared. The stores could not hold every returned good." : "Plot cleared.");
-    renderAll();
+    toast(r.lost ? "Plot cleared. The stores could not hold every returned good." : "Plot cleared.");
+    renderBoard();
+    renderSheet("[data-action='place']");
+    paint();
     save();
   }
-  function found() {
-    if (state.run < PRESTIGE_AT) return;
-    var runProsperity = state.run;
-    var tier = currentTierIndex();
-    state.seals += 1;
-    state.settlement += 1;
-    state.name = nextName();
-    state.run = 0;
-    state.knownTier = 0;
-    state.grid = new Array(PLOT_COUNT).fill(null);
-    state.selected = 17;
+  function doFocus(focus) {
+    var r = R.setFocus(state, state.selected, focus);
+    if (!r.ok) return;
+    state = r.state;
+    play("focus");
+    renderBoard();
+    renderSheet("[data-action='focus'][data-focus='" + focus + "']");
+    paint();
+    save();
+  }
+  function doFound() {
+    var r = R.found(state, Math.random);
+    if (!r.ok) return;
+    state = r.state;
     confirmClear = false;
-    applyStartRes();
+    focusPlot = state.selected;
     play("prestige");
     toast(state.name + ". Seal " + state.seals + " stays with the clan.");
     hubEvent("settlement-founded", {
       seals: state.seals,
-      runProsperity: Math.floor(runProsperity),
+      runProsperity: Math.floor(r.runProsperity),
       lifetime: Math.floor(state.lifetime),
-      tier: tier
+      tier: r.tier
     });
     hubGameOver(state.lifetime);
     sendScore(true);
+    modalReturn = null;
     closeModal();
     renderAll();
     save();
   }
-  function temper() {
-    if (countType("forge") < 1) { play("deny"); toast("Raise the forge annex first."); return; }
-    if (state.tempers >= 12) { play("deny"); return; }
-    if (state.starIron < 1) { play("deny"); toast("No star-iron in the vault."); return; }
-    state.starIron -= 1;
-    state.tempers += 1;
+  function doTemper() {
+    var r = R.temper(state);
+    if (!r.ok) {
+      play("deny");
+      if (r.reason === "no-forge") toast("Raise the forge annex first.");
+      else if (r.reason === "empty") toast("No star-iron in the vault.");
+      return;
+    }
+    state = r.state;
     play("temper");
     toast("The annex holds a keener edge. +" + (state.tempers * 4) + "% yields, kept when you found anew.");
     hubEvent("star-iron-tempered", { tempers: state.tempers });
@@ -1330,12 +1763,15 @@
     paint();
     save();
   }
-  function offer() {
-    if (countType("shrine") < 1) { play("deny"); toast("Raise a shrine first."); return; }
-    if (state.lacquerOffered >= 8) { play("deny"); return; }
-    if (state.moonLacquer < 1) { play("deny"); toast("No moon-lacquer in the vault."); return; }
-    state.moonLacquer -= 1;
-    state.lacquerOffered += 1;
+  function doOffer() {
+    var r = R.offer(state);
+    if (!r.ok) {
+      play("deny");
+      if (r.reason === "no-shrine") toast("Raise a shrine first.");
+      else if (r.reason === "empty") toast("No moon-lacquer in the vault.");
+      return;
+    }
+    state = r.state;
     play("temper");
     toast("The hokora drinks the lacquer. Ink flows thicker, even in the next settlement.");
     hubEvent("moon-lacquer-offered", { offerings: state.lacquerOffered });
@@ -1343,48 +1779,18 @@
     paint();
     save();
   }
-
-  function normalizeResource(r) {
-    var s = String(r || "").toLowerCase().replace(/[\s_-]/g, "");
-    if (s === "stariron") return "star-iron";
-    if (s === "moonlacquer") return "moon-lacquer";
-    return null;
-  }
-  function clampAmount(n) {
-    if (n == null || n === "") return 1;
-    var x = Math.floor(Number(n));
-    if (!isFinite(x) || x < 1) return 0;
-    return Math.min(20, x);
-  }
   function labelOf(res) { return res === "star-iron" ? "Star-iron" : "Moon-lacquer"; }
-  function applyVault(res, amount) {
-    var key = res === "star-iron" ? "starIron" : "moonLacquer";
-    var room = Math.max(0, 99 - state[key]);
-    var add = Math.min(room, amount);
-    state[key] += add;
-    return add;
-  }
-  function acceptGrant(input, silentDup) {
-    var res = normalizeResource(input && input.resource);
-    if (!res) return { ok: false, error: "unknown-resource" };
-    var amount = clampAmount(input.amount);
-    if (!amount) return { ok: false, error: "bad-amount" };
-    var id = input.id ? String(input.id).slice(0, 80) : "";
-    if (id && state.seenGrants.indexOf(id) >= 0) return { ok: true, applied: 0, duplicate: true };
-    var applied = applyVault(res, amount);
-    if (id) {
-      state.seenGrants.push(id);
-      if (state.seenGrants.length > 50) state.seenGrants.splice(0, state.seenGrants.length - 50);
-    }
-    var source = input.source ? String(input.source).slice(0, 40) : "another Rokumon game";
-    if (!silentDup) {
-      if (applied > 0) toast(labelOf(res) + " arrived from " + source + ".");
-      else toast("The vault could not hold more " + labelOf(res).toLowerCase() + ".");
-    }
-    if (applied > 0) document.getElementById("vault").open = true;
+  function acceptGrant(input) {
+    var r = R.applyGrant(state, input || {});
+    if (!r.ok || r.duplicate) return r.ok ? { ok: true, applied: 0, duplicate: true } : { ok: false, error: r.error };
+    state = r.state;
+    if (r.applied > 0) {
+      toast(labelOf(r.resource) + " arrived from " + (r.source || "another Rokumon game") + ".");
+      document.getElementById("vault").open = true;
+    } else toast("The vault could not hold more " + labelOf(r.resource).toLowerCase() + ".");
     paint();
     save();
-    return { ok: true, applied: applied, resource: res };
+    return { ok: true, applied: r.applied, resource: r.resource };
   }
   function pullGrants() {
     var raw = null;
@@ -1392,11 +1798,11 @@
     if (!raw) return;
     var bag = null;
     try { bag = JSON.parse(raw); } catch (e) { return; }
-    if (!bag || !Array.isArray(bag.pending)) return;
+    if (!bag || typeof bag !== "object" || !Array.isArray(bag.pending)) return;
     var keep = [];
     var accepted = [];
     bag.pending.forEach(function (item) {
-      if (!item || !normalizeResource(item.resource)) keep.push(item);
+      if (!item || typeof item !== "object" || !R.normalizeResource(item.resource)) keep.push(item);
       else accepted.push(item);
     });
     if (!accepted.length) return;
@@ -1404,13 +1810,14 @@
       bag.pending = keep;
       localStorage.setItem(GRANT_KEY, JSON.stringify(bag));
     } catch (e) { return; }
-    accepted.forEach(function (item) { acceptGrant(item, false); });
+    accepted.forEach(acceptGrant);
   }
 
+  /* ---------- hub bridge (optional) ---------- */
   function hubCall(name, args) {
     var h = window.Hub;
     if (!h || typeof h[name] !== "function") return;
-    try { h[name].apply(h, args); } catch (e) { /* host bridge failed */ }
+    try { h[name].apply(h, args); } catch (e) { /* host bridge failed; the game carries on */ }
   }
   function hubEvent(name, props) { hubCall("event", [name, props]); }
   function hubGameOver(score) { hubCall("gameOver", [Math.floor(score), 0]); }
@@ -1427,16 +1834,20 @@
     hubCall("score", [n]);
   }
 
+  /* ---------- audio ---------- */
   function unlockAudio() {
+    if (!state.sound) return null;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    if (!ctx) {
-      ctx = new AC({ latencyHint: "interactive" });
-      master = ctx.createGain();
-      master.gain.value = 0.22;
-      master.connect(ctx.destination);
-    }
-    if (ctx.state === "suspended") ctx.resume();
+    try {
+      if (!ctx) {
+        ctx = new AC({ latencyHint: "interactive" });
+        master = ctx.createGain();
+        master.gain.value = 0.22;
+        master.connect(ctx.destination);
+      }
+      if (ctx.state === "suspended") ctx.resume().catch(function () {});
+    } catch (e) { return null; }
     return ctx;
   }
   function tone(freq, dur, type, gain, delay) {
@@ -1453,7 +1864,7 @@
     g.connect(master);
     o.start(t);
     o.stop(t + dur + 0.03);
-    o.onended = function () { try { o.disconnect(); g.disconnect(); } catch (e) {} };
+    o.onended = function () { try { o.disconnect(); g.disconnect(); } catch (e) { /* already gone */ } };
   }
   function play(kind) {
     if (!state.sound) return;
@@ -1472,64 +1883,77 @@
     else audio.resume().then(run).catch(function () {});
   }
 
+  /* ---------- input ---------- */
   document.addEventListener("pointerdown", function () { unlockAudio(); });
   document.addEventListener("keydown", function (e) {
-    unlockAudio();
+    if (modalKind && e.key === "Tab") { trapFocus(e); return; }
     if (e.key === "Escape" && modalKind) {
       var kind = modalKind;
       closeModal();
-      if (kind === "guide") finishGuide();
-    } else if ((e.key === "?" || (e.key === "/" && e.shiftKey)) && !modalKind) openGuide();
+      afterModalClosed(kind);
+      return;
+    }
+    if (e.key === "?" && !modalKind && !e.ctrlKey && !e.metaKey && !e.altKey) { openGuide(); return; }
+    var t = e.target;
+    if (!modalKind && t && t.classList && t.classList.contains("plot")) {
+      var i = Number(t.dataset.index);
+      var r = Math.floor(i / COLS), c = i % COLS, next = -1;
+      if (e.key === "ArrowLeft" && c > 0) next = i - 1;
+      else if (e.key === "ArrowRight" && c < COLS - 1) next = i + 1;
+      else if (e.key === "ArrowUp" && r > 0) next = i - COLS;
+      else if (e.key === "ArrowDown" && r < R.ROWS - 1) next = i + COLS;
+      else if (e.key === "Home") next = r * COLS;
+      else if (e.key === "End") next = r * COLS + COLS - 1;
+      if (next >= 0) { e.preventDefault(); moveBoardFocus(next); }
+    }
   });
+  document.addEventListener("keydown", function () { unlockAudio(); }, { once: true });
   document.body.addEventListener("click", function (e) {
     var t = e.target.closest("[data-action]");
     if (!t || t.disabled) return;
+    if (t.getAttribute("aria-disabled") === "true") { deny("cost", costFrom(t)); return; }
     var action = t.dataset.action;
     if (action === "select") {
       var i = Number(t.dataset.index);
-      if (!isOpen(i)) { play("deny"); toast("Mist holds this plot until " + opensAt(i) + "."); return; }
-      state.selected = i;
+      focusPlot = i;
+      if (!R.plotOpen(state, i)) {
+        play("deny");
+        toast("Mist holds this plot until " + opensAtName(i) + ".");
+        moveBoardFocus(i);
+        return;
+      }
+      if (state.selected !== i) {
+        state = R.clone(state);
+        state.selected = i;
+      }
       confirmClear = false;
       renderBoard();
       renderSheet();
       paint();
       return;
     }
-    if (action === "place") place(t.dataset.type);
-    else if (action === "upgrade") upgrade();
-    else if (action === "focus") {
-      var bld = state.grid[state.selected];
-      var nextFocus = t.dataset.focus;
-      if (!bld || bld.type !== "hut") return;
-      if (nextFocus !== "wood" && nextFocus !== "stone" && nextFocus !== "food") return;
-      bld.focus = nextFocus;
-      play("focus");
-      renderSheet();
-      paint();
-      save();
-    } else if (action === "clear-ask") { confirmClear = true; renderSheet(); }
-    else if (action === "clear-no") { confirmClear = false; renderSheet(); }
-    else if (action === "clear-yes") clearPlot();
+    if (action === "place") doPlace(t.dataset.type);
+    else if (action === "upgrade") doUpgrade();
+    else if (action === "focus") doFocus(t.dataset.focus);
+    else if (action === "clear-ask") { confirmClear = true; renderSheet("[data-action='clear-no']"); }
+    else if (action === "clear-no") { confirmClear = false; renderSheet("[data-action='clear-ask']"); }
+    else if (action === "clear-yes") doClear();
     else if (action === "prestige-ask") openPrestige();
-    else if (action === "prestige-confirm") found();
-    else if (action === "temper") temper();
-    else if (action === "offer") offer();
+    else if (action === "prestige-confirm") doFound();
+    else if (action === "temper") doTemper();
+    else if (action === "offer") doOffer();
     else if (action === "sound-toggle") {
+      state = R.clone(state);
       state.sound = !state.sound;
       if (state.sound) { unlockAudio(); play("focus"); }
+      else if (ctx && ctx.state === "running") ctx.suspend().catch(function () {});
       paint();
       save();
     } else if (action === "guide-open") openGuide();
-    else if (action === "guide-close") { closeModal(); finishGuide(); }
-    else if (action === "modal-close") {
-      var kind2 = modalKind;
+    else if (action === "guide-close" || action === "modal-close") {
+      var kind = modalKind;
       closeModal();
-      if (kind2 === "guide") finishGuide();
-      else if (pendingAway && !modalKind) {
-        var away = pendingAway;
-        pendingAway = null;
-        openAway(away);
-      }
+      afterModalClosed(kind);
     }
   });
   document.getElementById("modal").addEventListener("click", function (e) {
@@ -1537,65 +1961,72 @@
     if (modalKind === "prestige") return;
     var kind = modalKind;
     closeModal();
-    if (kind === "guide") finishGuide();
+    afterModalClosed(kind);
   });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { save(); return; }
     var info = catchUp();
+    lastFrame = 0;
     renderAll();
     handleAway(info);
     pullGrants();
   });
   window.addEventListener("pagehide", save);
 
+  /* Live ticks use real elapsed frame time; gaps over a second go through the offline path. */
   function loop(now) {
-    if (!lastFrame) lastFrame = now;
-    var raw = (now - lastFrame) / 1000;
+    var raw = lastFrame ? (now - lastFrame) / 1000 : 0;
     lastFrame = now;
+    if (!(raw >= 0)) raw = 0;
     if (raw > 1) {
       var info = catchUp();
       renderAll();
       handleAway(info);
     } else {
-      acc += Math.max(0, raw);
-      var stepped = false;
-      var guard = 0;
-      while (acc >= 0.1 && guard < 30) { tick(0.1); acc -= 0.1; stepped = true; guard++; }
-      if (stepped) {
-        syncTier(true);
+      acc += raw;
+      if (acc >= 0.1) {
+        state = R.advance(state, acc, 0.1);
+        acc = 0;
+        state.lastTick = Math.max(state.lastTick, Date.now());
+        afterTier(true);
         paint();
-        state.lastTick = Date.now();
       }
     }
-    saveAcc += Math.min(raw, 2);
+    var step = Math.min(raw, 2);
+    saveAcc += step;
     if (saveAcc >= 2) { save(); saveAcc = 0; }
-    scoreAcc += Math.min(Math.max(raw, 0), 2);
+    scoreAcc += step;
     if (scoreAcc >= 2.5) { sendScore(false); scoreAcc = 0; }
-    grantAcc += Math.min(Math.max(raw, 0), 2);
+    grantAcc += step;
     if (grantAcc >= 4) { pullGrants(); grantAcc = 0; }
     requestAnimationFrame(loop);
   }
 
   window.addEventListener("message", function (e) {
+    // Only the embedding hub (the parent frame) or this window may deliver goods.
+    if (e.source !== window.parent && e.source !== window) return;
     var d = e.data;
-    if (!d || d.type !== "rokumon-grant") return;
-    acceptGrant(d, false);
+    if (!d || typeof d !== "object" || d.type !== "rokumon-grant") return;
+    acceptGrant(d);
   });
-  window.addEventListener("rokumon-grant", function (e) { acceptGrant((e && e.detail) || {}, false); });
+  window.addEventListener("rokumon-grant", function (e) { acceptGrant((e && e.detail) || {}); });
 
-  window.RokumonVillage = {
-    grant: function (input) { return acceptGrant(input || {}, false); },
+  window.RokumonVillage = Object.freeze({
+    grant: function (input) { return acceptGrant(input || {}); },
     getScore: function () { return Math.floor(state.lifetime); }
-  };
+  });
 
-  load();
+  state = load();
+  focusPlot = state.selected;
   var away = catchUp();
   renderAll();
   pullGrants();
+  if (loadNote) toast(loadNote);
   if (!state.sawGuide) {
     pendingAway = away;
     openGuide();
   } else if (away) openAway(away);
+  save();
   sendReady();
   sendScore(true);
   setTimeout(function () { sendReady(); sendScore(true); }, 600);
