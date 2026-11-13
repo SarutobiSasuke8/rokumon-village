@@ -16,7 +16,7 @@
   },
   "genres": ["Incremental", "Builder"],
   "tags": ["idle", "village", "builder", "prestige", "offline", "mobile", "single-player"],
-  "controls": ["mouse", "touch"],
+  "controls": ["mouse", "touch", "keyboard"],
   "players": { "min": 1, "max": 1 },
   "support": { "desktop": "full", "mobile": "full" },
   "media": {
